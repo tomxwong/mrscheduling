@@ -32,7 +32,7 @@ public class RandomInstance {
 	{
 		this.setParams(p);
 		this.instName = INST_PREFIX + name;
-		this.outputPath = "E:\\TestData\\";
+		this.outputPath = "..\\TestData\\";
 		try {
 			this.writer = new BufferedWriter(new FileWriter(outputPath + instName + ".txt", false));
 		} catch (IOException e) {
@@ -42,65 +42,8 @@ public class RandomInstance {
 	
 	public Schedule newInstance() throws IOException
 	{
-		int nodeNum = params.getP_node();//100;
-		int mapSlot = params.getP_map_slot();//4;
-		int reduceSlot = params.getP_reduce_slot();//2;
-		int rackNum = params.getP_rack();//5;
 		int jobNum = params.getP_jobs();//20;
 		
-		//write to instance file for reuse
-		writer.write(jobNum + "\r\n");
-		writer.flush();
-		
-		//int mapInput = 10000;//unit is metabyte
-		//double ioRate = 0.1;//input is 10, output is 1
-	
-		/*Cluster cluster = new Cluster(nodeNum, rackNum, mapSlot, reduceSlot);
-		Schedule s = new Schedule(cluster);
-		//Schedule sclone = new Schedule(cluster);
-		//generate slots info
-		for(int i = 0; i < nodeNum * mapSlot; i++)
-		{
-			DataNode node = new DataNode(i + 1, Stype.Map);
-			cluster.getMapNodes().add(node);
-		}
-		for(int i = 0; i < nodeNum * reduceSlot; i++)
-		{
-			DataNode node = new DataNode(cluster.getMapNodes().size() + i + 1, Stype.Reduce);
-			cluster.getReduceNodes().add(node);
-		}*/
-		
-		/*int len = cluster.getMapNodes().size() + cluster.getReduceNodes().size();
-		int[][] topo = new int[len + 1][];
-		for(int i = 0; i < topo.length; i++)
-			topo[i] = new int[len + 1];
-		
-		//put slot on node in a round-robin way
-		int rackNode = cluster.getNodeNum() / cluster.getRackNum();//+ 1;
-		for(int i = 1; i <= len; i++){
-			for(int j = 1; j <= len; j++){
-				int jvalue = j % cluster.getNodeNum() == 0 ? cluster.getNodeNum() : j % cluster.getNodeNum();
-			    int ivalue = i % cluster.getNodeNum() == 0 ? cluster.getNodeNum() : i % cluster.getNodeNum();
-				if(ivalue == jvalue)
-					topo[i][j] = 1;
-				else if(i < j){
-					ivalue = (ivalue % rackNode == 0 || (ivalue / rackNode + 1) * rackNode > nodeNum) ? ivalue / rackNode - 1 : ivalue / rackNode;
-					jvalue = (jvalue % rackNode == 0 || (jvalue / rackNode + 1) * rackNode > nodeNum) ? jvalue / rackNode - 1 : jvalue / rackNode;
-					if(ivalue == jvalue)
-						topo[i][j] = 2;
-					else topo[i][j] = 3;
-				}
-				else 
-					topo[i][j] = topo[j][i];
-			}
-		}
-		
-		cluster.setTopo(topo);*/
-		//generate task info according to the probability distribution
-		//here
-		//
-		//s.setIoRate(params.getP_io_rate());
-		//sclone.setIoRate(params.getP_io_rate());
 		int mapTask = 0;
 		int reduceTask = 0;
 		int taskSize = Cluster.BLOCK_SIZE; //assume now that the input size of each task is equal
