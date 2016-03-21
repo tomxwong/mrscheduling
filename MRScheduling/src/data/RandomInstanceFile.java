@@ -1,7 +1,10 @@
 package data;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
@@ -45,7 +48,6 @@ public class RandomInstanceFile {
 		this.inputPath = input;
 		try {
 			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_20_1.txt"));
-			//this.writer = new BufferedWriter(new FileWriter(outputPath + instName + ".txt", false));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -62,12 +64,6 @@ public class RandomInstanceFile {
 		//int jobNum = params.getP_jobs();//20;
 		
 		int jobNum = Integer.parseInt(jobs);
-		//write to instance file for reuse
-		//writer.write(nodeNum + "\t" + rackNum + "\t" + mapSlot + "\t" + reduceSlot + "\t" + jobNum + "\r\n");
-		//writer.flush();
-		
-		//int mapInput = 10000;//unit is metabyte
-		//double ioRate = 0.1;//input is 10, output is 1
 	
 		Cluster cluster = new Cluster(nodeNum, rackNum, mapSlot, reduceSlot);
 		cluster.setOmega(params.getP_omega());
@@ -139,10 +135,7 @@ public class RandomInstanceFile {
 		//////////////////////////////////////////////////////
 		cluster.setTopo(topo);
 		//generate task info according to the probability distribution
-		//here
-		//
-		//s.setIoRate(params.getP_io_rate());
-		//sclone.setIoRate(params.getP_io_rate());
+
 		int mapTask = 0;
 		int reduceTask = 0;
 		int deadLine = 0;
@@ -151,16 +144,12 @@ public class RandomInstanceFile {
 		String tasks = null;
 		for(int i = 1; i <= jobNum; i++)
 		{
-			//mapTask = 5 + rand.nextInt(15);
-			//NormalDistribution nd = new NormalDistribution(params.getP_map_num_miu(), params.getP_map_num_sig());
-			//mapTask = (int)Math.ceil(nd.getNext());
+
 			tasks = reader.readLine();
 			String[] taskInfo = tasks.split("\t");
 			//获取map task数量
 			mapTask = Integer.parseInt(taskInfo[0]);
-			
-			//nd = new NormalDistribution(params.getP_reduce_num_miu(), params.getP_reduce_num_sig());
-			//reduceTask = (int)Math.ceil(nd.getNext());
+
 			//获取reduce task数量
 			reduceTask = Integer.parseInt(taskInfo[1]);
 			//获取任务数据大小
@@ -171,20 +160,12 @@ public class RandomInstanceFile {
 			deadLine = Integer.parseInt(taskInfo[4]);
 			params.setP_io_rate(ioRate);
 			
-			//writer.write(mapTask + "\t" + reduceTask + "\r\n");
-			
-			//mapTask = mapInput / Cluster.BLOCK_SIZE + 1;
-			//int mapInput = mapTask * Cluster.BLOCK_SIZE;//for simplicity and better data locality:split size == block size
-			//taskSize = Cluster.BLOCK_SIZE;
 			
 			Job job = new Job(i, mapTask, reduceTask);
 			job.setDeadline(deadLine);
 			//
 			System.out.println("generate job id:"+i+" map task num: "+job.getMapNum()+" reduce task num: "+job.getReduceNum());
-			//
-			//s.getJobs().add(job);
-			//generate task duration
-			//for all map and reduce tasks
+
 			long taskDuration = 0;
 			//int curSlot = 1;
 			int curNode = 1;
@@ -198,7 +179,6 @@ public class RandomInstanceFile {
 				Task task = new Task(j, taskDuration, TaskType.MAP, job);
 				//
 				System.out.println(" genrate task id:"+j+" taskDuration:"+taskDuration+" task type:"+TaskType.MAP+" job id:"+job.getJobID());
-				//
 				//每个任务的输入数据大小相同
 				task.setInputSize(taskSize);
 				task.setOutputSize((task.getInputSize() * params.getP_io_rate()));
@@ -235,17 +215,26 @@ public class RandomInstanceFile {
 			//sclone.getJobs().add(job);
 		}
 
-		//
+		//写到本地文件
+		File file =new File("..\\file.txt");
+		if(!file.exists()){
+		   file.createNewFile();
+		}
+		FileWriter fileWritter = new FileWriter(file.getName(),true);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
 		for (Job job : s.getJobs()) {
 			for (Task task : job.getMaps())
-				for (int it : task.getDataLocations().keySet())
-					//System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" data node id: "+it+" dataSize: "+task.getDataLocations().get(it));
-			          System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" task type: "+task.getType()+" dataLocationsSize: "+task.getDataLocations().size()+" node id: "+it+" data size: "+task.getDataLocations().get(it));
+				for (int it : task.getDataLocations().keySet()){
+					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
+			        System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" task type: "+task.getType()+" dataLocationsSize: "+task.getDataLocations().size()+" node id: "+it+" data size: "+task.getDataLocations().get(it));
+				}
 			for (Task task : job.getReduces())
-				for (int it : task.getDataLocations().keySet())
-					//System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" data node id: "+it+" dataSize: "+task.getDataLocations().get(it));
+				for (int it : task.getDataLocations().keySet()){
+					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
 					System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" task type: "+task.getType()+" dataLocationsSize: "+task.getDataLocations().size()+" node id: "+it+" data size: "+task.getDataLocations().get(it));
-			}
+				}
+		}
+		bufferWritter.close();
 		this.setResult(s);
 		return s;
 	}

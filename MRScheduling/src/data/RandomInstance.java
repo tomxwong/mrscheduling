@@ -32,7 +32,7 @@ public class RandomInstance {
 	{
 		this.setParams(p);
 		this.instName = INST_PREFIX + name;
-		this.outputPath = "J:\\Myspace\\论文\\实验工具\\TestData\\";
+		this.outputPath = "..\\TestData\\";
 		try {
 			this.writer = new BufferedWriter(new FileWriter(outputPath + instName + ".txt", false));
 		} catch (IOException e) {
@@ -161,9 +161,11 @@ public class RandomInstance {
 	public static void main(String[] args) {
 		Parameters p = new Parameters();
 		p.setP_io_rate(0.1);
+		//随意设置
 		p.setP_jobs(4);
-		p.setP_node(20);
-		p.setP_rack(2);
+		
+		p.setP_node(100);
+		p.setP_rack(10);
 		p.setP_map_slot(4);
 		p.setP_reduce_slot(2);
 		
@@ -190,7 +192,7 @@ public class RandomInstance {
 		RandomInstance ri = new RandomInstance(p, p.getP_jobs() + "_1");
 		//产生30个实例
 		int replica = 30;
-		int[] jobs = {4, 5, 6, 7, 8, 20,50,100,150,200,250};
+		int[] jobs = {20,50,100,150,200,250};
 		for(int job: jobs)
 		{
 			//设置每一个的作业数量
