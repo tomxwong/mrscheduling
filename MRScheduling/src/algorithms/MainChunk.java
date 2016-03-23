@@ -42,6 +42,7 @@ public class MainChunk{
 	         return -1;
 	    }
 	}
+	//调用此方法的前提是对每一个list都用Schedule执行过一遍
 	private class ListComparator implements Comparator<Object>{
 		@SuppressWarnings("unchecked")
 		@Override
@@ -49,7 +50,8 @@ public class MainChunk{
 			// TODO Auto-generated method stub
 			List<Job> list1 = (List<Job>)o1;
 			List<Job> list2 = (List<Job>)o2;
-			long r1 = calculateTotalPenaltyCost(list1),r2 = calculateTotalPenaltyCost(list2);
+			
+			long r1 = getTotalPenaltyCost(list1),r2 = getTotalPenaltyCost(list2);
 			if(r1 > r2){
 				return 1;
 			}else if(r1 == r2){
