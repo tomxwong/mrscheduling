@@ -272,7 +272,7 @@ public class Schedule {
 								long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
 								long finishTime = currentTime + tepSetupTime + task.getProcessTime();
 								task.setFinishTime(finishTime);
-								task.setOutputSize(task.getInputSize() * this.getIoRate());
+								task.setOutputSize(task.getInputSize() * task.getJob().getIo_rate());
 								task.setReduceDataNode(nodeId);
 								sl.setCurFinishTime(sl.getCurFinishTime() + tepSetupTime + task.getProcessTime());
 								task.setProcessed(true);
@@ -309,10 +309,15 @@ public class Schedule {
 						if(sl.getCurFinishTime() <= currentTime){
 							long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
 							long finishTime = currentTime + tepSetupTime + task.getProcessTime();
+							//任务结束时间
 							task.setFinishTime(finishTime);
+							//当前MAP任务输出数据大小
 							task.setOutputSize(task.getInputSize() * this.getIoRate());
+							//记录MAP结果输出数据节点
 							task.setReduceDataNode(nodeId);
+							//当前DATANODE的结束时间
 							sl.setCurFinishTime(sl.getCurFinishTime() + tepSetupTime + task.getProcessTime());
+							//任务设置为已处理
 							task.setProcessed(true);
 							return tepSetupTime + task.getProcessTime();
 						}

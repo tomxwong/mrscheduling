@@ -10,8 +10,8 @@ public class Slot{
 		this.nodeID = nodeID;
 	}
 
-	private long startTime;
-	private long curFinishTime;
+	private long startTime = 0;
+	private long curFinishTime = 0;
 	public long getStartTime() {
 		return startTime;
 	}

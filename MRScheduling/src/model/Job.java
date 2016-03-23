@@ -24,11 +24,19 @@ public class Job {
 	public void setDeadline(long deadline) {
 		this.deadline = deadline;
 	}
-	public static double[] getIo_rate() {
+	public  double getIo_rate() {
 		return io_rate;
 	}
-	public static void setIo_rate(double[] io_rate) {
-		Job.io_rate = io_rate;
+	//用于生成数据
+	public static double[] io_for_generate={0.1,0.3,0.5,0.7,0.9};
+	public static double[] getIo_for_generate() {
+		return io_for_generate;
+	}
+	public static void setIo_for_generate(double[] io_for_generate) {
+		Job.io_for_generate = io_for_generate;
+	}
+	public  void setIo_rate(double io_rate) {
+		this.io_rate = io_rate;
 	}
 	public static int[] getTask_size() {
 		return task_size;
@@ -75,7 +83,7 @@ public class Job {
 	private ArrayList<Integer> mapMachines = new ArrayList<Integer>();
 	
 	private Map<Integer, Integer> slotMapTaskNum = new HashMap<Integer, Integer>();//num of map assigned to the node that the slot resides
-	public static double[] io_rate = {0.2,0.4,0.6,0.8,1.0};//{0.1, 0.5, 1.0};
+	public double io_rate;
 	public static int[] task_size = {128,192,256,320,384};//{64, 128, 192, 256, 320};
 	
 	public Job(int id, int m, int r)

@@ -47,7 +47,7 @@ public class RandomInstanceFile {
 		//this.instName = INST_PREFIX + name;
 		this.inputPath = input;
 		try {
-			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_20_1.txt"));
+			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_5_1.txt"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -158,10 +158,12 @@ public class RandomInstanceFile {
 			ioRate = Double.parseDouble(taskInfo[3]);
 			//获取deadline
 			deadLine = Integer.parseInt(taskInfo[4]);
-			params.setP_io_rate(ioRate);
 			
 			
 			Job job = new Job(i, mapTask, reduceTask);
+			//当前作业的IO比率
+			job.setIo_rate(ioRate);
+			//设置作业截止期
 			job.setDeadline(deadLine);
 			//
 			System.out.println("generate job id:"+i+" map task num: "+job.getMapNum()+" reduce task num: "+job.getReduceNum());
@@ -242,7 +244,7 @@ public class RandomInstanceFile {
 	private int setDataDistribution(Task task, int curNode, Cluster cluster) {
 	int interval = Cluster.DUPLICATE;
 	int i;
-	for(i = 1; i < curNode + interval/*cluster.getMapNodes().size()*/; i++)
+	for(i = 1; i < curNode + interval/*cluster.getMapNodes().size()*/; i ++)
 	{
 		if(i >= curNode){
 			task.getDataLocations().put(i % cluster.getMapNodes().size() == 0 ? cluster.getMapNodes().size() : 
@@ -308,7 +310,7 @@ public class RandomInstanceFile {
 		p.setP_job_deadline_miu(200);
 		p.setP_job_deadline_sigma(100);
 		
-		RandomInstanceFile ri = new RandomInstanceFile(p, "..\\TestData\\");
+		RandomInstanceFile ri = new RandomInstanceFile(p, "..\\..\\TestData\\");
 		try {
 			Schedule s = ri.newInstance();
 		} catch (IOException e) {

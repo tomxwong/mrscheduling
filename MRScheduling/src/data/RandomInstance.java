@@ -32,7 +32,7 @@ public class RandomInstance {
 	{
 		this.setParams(p);
 		this.instName = INST_PREFIX + name;
-		this.outputPath = "..\\TestData\\";
+		this.outputPath = "..\\..\\TestData\\";
 		try {
 			this.writer = new BufferedWriter(new FileWriter(outputPath + instName + ".txt", false));
 		} catch (IOException e) {
@@ -75,13 +75,11 @@ public class RandomInstance {
 			//随机产生作业任务大小索引
 			tsIndex = rand.nextInt(Job.task_size.length);
 			//随机产生io比率索引
-			ioIndex = rand.nextInt(Job.io_rate.length);
-			
+			ioIndex = rand.nextInt(Job.io_for_generate.length);
 			//随机产生任务的大小
 			taskSize = Job.task_size[tsIndex];
-			
 			//设置io比率
-			params.setP_io_rate(Job.io_rate[ioIndex]);
+			params.setP_io_rate(Job.io_for_generate[ioIndex]);
 			
 			Job job = new Job(i, mapTask, reduceTask);
 			//for deadline
@@ -118,29 +116,6 @@ public class RandomInstance {
 		
 		return null;//s;
 	}
-	private int setDataDistribution(Task task, int curSlot, Cluster cluster) {
-		//dispatch split data in a round-robin way
-		int interval = Cluster.DUPLICATE;
-		int i;
-		for(i = 1; i < curSlot + interval * cluster.getMapSlot()/*cluster.getMapNodes().size()*/; i++)
-		{
-			if(i >= curSlot){
-				task.getDataLocations().put(i % cluster.getMapNodes().size() == 0 ? cluster.getMapNodes().size() : 
-					i % cluster.getMapNodes().size(), (int)task.getInputSize());
-				task.getHostList().add(i);
-			}
-			else
-				task.getDataLocations().put(i, 0);
-			
-		}
-		if(i <= cluster.getMapNodes().size()){
-			for(;i <= cluster.getMapNodes().size(); i++)
-				task.getDataLocations().put(i, 0);
-		}
-		curSlot = (curSlot + interval * cluster.getMapSlot()) % cluster.getMapNodes().size();
-		return curSlot;
-		
-	}
 
 	public Parameters getParams() {
 		return params;
@@ -158,16 +133,72 @@ public class RandomInstance {
 		return instName;
 	}
 
+//	public static void main(String[] args) {
+//		Parameters p = new Parameters();
+//		//随意设置
+//		p.setP_io_rate(0.1);
+//		p.setP_jobs(4);
+//		//////
+//		
+//		
+//		p.setP_node(100);
+//		p.setP_rack(10);
+//		p.setP_map_slot(4);
+//		p.setP_reduce_slot(2);
+//		
+//		p.setP_map_num_miu(40);
+//		p.setP_map_num_sig(55);
+//		p.setP_map_dura_miu(50);
+//		p.setP_map_dura_sig(20);
+//		
+//		p.setP_reduce_num_miu(30);
+//		p.setP_reduce_num_sig(45);
+//		p.setP_reduce_dura_miu(100);
+//		p.setP_reduce_dura_sig(30);
+//		
+//		//extra add
+//		p.setP_job_deadline_miu(100);
+//		p.setP_job_deadline_sigma(50);
+//		
+//		p.setP_scale_bi_major_high(2);
+//		p.setP_scale_bi_major_low(1);
+//		
+//		p.setP_scale_bi_minor_high(10);
+//		p.setP_scale_bi_minor_low(8);
+//		
+//		RandomInstance ri = new RandomInstance(p, p.getP_jobs() + "_1");
+//		//产生30个实例
+//		int replica = 30;
+//		int[] jobs = {20,50,100,150,200,250};
+//		for(int job: jobs)
+//		{
+//			//设置每一个的作业数量
+//			p.setP_jobs(job);
+//			for(int i = 1; i <= replica; i++)
+//			{
+//				ri = new RandomInstance(p,  p.getP_jobs() + "_" + i);
+//				try {
+//					ri.newInstance();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			System.out.println("已经生成规模为" + p.getP_jobs() + "的实例" + replica + "个");
+//		}
+//
+//	}
 	public static void main(String[] args) {
 		Parameters p = new Parameters();
-		p.setP_io_rate(0.1);
 		//随意设置
+		p.setP_io_rate(0.1);
 		p.setP_jobs(4);
+		//////
 		
-		p.setP_node(100);
-		p.setP_rack(10);
-		p.setP_map_slot(4);
-		p.setP_reduce_slot(2);
+		
+		p.setP_node(10);
+		p.setP_rack(2);
+		p.setP_map_slot(2);
+		p.setP_reduce_slot(1);
 		
 		p.setP_map_num_miu(40);
 		p.setP_map_num_sig(55);
@@ -192,7 +223,7 @@ public class RandomInstance {
 		RandomInstance ri = new RandomInstance(p, p.getP_jobs() + "_1");
 		//产生30个实例
 		int replica = 30;
-		int[] jobs = {20,50,100,150,200,250};
+		int[] jobs = {5,20,50,100};
 		for(int job: jobs)
 		{
 			//设置每一个的作业数量
@@ -210,5 +241,4 @@ public class RandomInstance {
 		}
 
 	}
-
 }
