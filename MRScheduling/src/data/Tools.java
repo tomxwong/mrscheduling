@@ -1,7 +1,9 @@
 package data;
 
+import java.util.List;
 import java.util.ArrayList;
 
+import model.Cluster;
 import model.DataNode;
 import model.Job;
 import model.Schedule;
@@ -9,7 +11,26 @@ import model.Slot;
 import model.Task;
 
 public class Tools {
-
+	public static void clearJobList(List<Job> joblist){
+		for (Job job : joblist) {
+			for (Task task : job.getMaps()) {
+				task.setFinishTime(0);
+				task.setOutputSize(0);
+				task.setProcessed(false);
+				task.setReduceDataNode(-1);
+				task.setSortKey(0);
+				task.setStartTime(0);
+			}
+		}
+	}
+	public static void clearDataNode(Cluster cluster){
+		for (DataNode dn : cluster.getReduceNodes()) {
+			for (Slot it_slot : dn.getSlots()) {
+				it_slot.setCurFinishTime(0);
+				it_slot.setStartTime(0);
+			}
+		}
+	}
 	public static void clearSchedule(Schedule s) {
 		//清理作业的相关信息
 		for(Job job : s.getJobs())

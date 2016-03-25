@@ -1,13 +1,11 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import data.Tools;
 import model.Task.TaskType;
 
 //import org.apache.commons.collections.BinaryHeap;
@@ -271,6 +269,7 @@ public class Schedule {
 							if(sl.getCurFinishTime() <= currentTime){
 								long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
 								long finishTime = currentTime + tepSetupTime + task.getProcessTime();
+								task.setStartTime(currentTime);
 								task.setFinishTime(finishTime);
 								task.setOutputSize(task.getInputSize() * task.getJob().getIo_rate());
 								task.setReduceDataNode(nodeId);
@@ -288,6 +287,7 @@ public class Schedule {
 				if(topo[nodeId][nd.getNodeID()] == 2){
 					for (Slot sl : nd.getSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
+							task.setStartTime(currentTime);
 							long tepSetupTime = (long)task.getInputSize() / Cluster.RACK_RATE;
 							long finishTime = currentTime + tepSetupTime + task.getProcessTime();
 							task.setFinishTime(finishTime);
@@ -307,6 +307,7 @@ public class Schedule {
 				if(topo[nodeId][nd.getNodeID()] == 3){
 					for (Slot sl : nd.getSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
+							task.setStartTime(currentTime);
 							long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
 							long finishTime = currentTime + tepSetupTime + task.getProcessTime();
 							//任务结束时间
@@ -343,6 +344,7 @@ public class Schedule {
 										transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
 									}	
 								}
+								task.setStartTime(currentTime);
 								long finishTime = currentTime + transferTime + task.getProcessTime();
 								task.setFinishTime(finishTime);
 								sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());
@@ -369,6 +371,7 @@ public class Schedule {
 											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
 										}	
 									}
+									task.setStartTime(currentTime);
 									long finishTime = currentTime + transferTime + task.getProcessTime();
 									task.setFinishTime(finishTime);
 									sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());
@@ -396,6 +399,7 @@ public class Schedule {
 											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
 										}	
 									}
+									task.setStartTime(currentTime);
 									long finishTime = currentTime + transferTime + task.getProcessTime();
 									task.setFinishTime(finishTime);
 									sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());

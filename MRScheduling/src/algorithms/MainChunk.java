@@ -10,9 +10,7 @@ import java.util.List;
 import data.Parameters;
 import data.RandomInstanceFile;
 import data.Tools;
-import model.Cluster;
 import model.Job;
-import model.JobComparator;
 import model.Schedule;
 import model.Task;
 
@@ -78,6 +76,8 @@ public class MainChunk{
         if (k == arr.size() -1){
             ///////////////////////////////////
         	Tools.clearSchedule(schedule);
+        	Tools.clearJobList(arr);
+        	Tools.clearDataNode(schedule.getCluster());
         	long currentTime = 0;
     		List<Job> jlist = new ArrayList<Job>(arr);
     		List<Job> rJlist = new ArrayList<Job>();
@@ -377,6 +377,8 @@ public class MainChunk{
 			for (List<Job> joblist : lists) {
 				//把当前作业序列执行一遍
 				Tools.clearSchedule(schedule);
+	        	Tools.clearJobList(joblist);
+	        	Tools.clearDataNode(schedule.getCluster());
 				runlist(schedule,joblist);
 				for (Job job : joblist) {
 					//拖期完成的情况
@@ -469,6 +471,8 @@ public class MainChunk{
 	//无法找到ES处理方法
 	public List<Job> minimizePenaltyCost(Schedule schedule, List<Job> joblist){
 		Tools.clearSchedule(schedule);
+    	Tools.clearJobList(joblist);
+    	Tools.clearDataNode(schedule.getCluster());
 		Job ji = null;
 		for(int i = 0; i < joblist.size(); i++)
 		{
