@@ -1,10 +1,16 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Job {
+public class Job implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5865848706027532115L;
 	private int jobID;
 	private int mapNum;
 	private int reduceNum;
@@ -24,9 +30,7 @@ public class Job {
 	public void setDeadline(long deadline) {
 		this.deadline = deadline;
 	}
-	public  double getIo_rate() {
-		return io_rate;
-	}
+
 	//用于生成数据
 	public static double[] io_for_generate={0.1,0.3,0.5,0.7,0.9};
 	public static double[] getIo_for_generate() {
@@ -37,6 +41,9 @@ public class Job {
 	}
 	public  void setIo_rate(double io_rate) {
 		this.io_rate = io_rate;
+	}
+	public  double getIo_rate() {
+		return io_rate;
 	}
 	public static int[] getTask_size() {
 		return task_size;
@@ -179,9 +186,5 @@ public class Job {
 	public int getMaxMapMachine() {
 		return maxMapMachine;
 	}
-	
-	
-	
-	
 	
 }

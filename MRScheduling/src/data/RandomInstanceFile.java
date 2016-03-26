@@ -18,6 +18,7 @@ import model.DataNode.Stype;
 import model.Task.TaskType;
 import model.Task;
 import model.Slot;
+import model.Slot.SlotType;
 
 public class RandomInstanceFile {
 
@@ -73,31 +74,31 @@ public class RandomInstanceFile {
 		//遍历所有的map nodes
 		for(int i = 0; i < nodeNum; i++)
 		{
-			DataNode node = new DataNode(i + 1, Stype.Map);
+			DataNode node = new DataNode(i + 1);
 			cluster.getMapNodes().add(node);
 		}
-		//为每一个节点增加4个slot
+		//为每一个节点增加4个MAP slot
 		for (int i = 0; i < nodeNum; i++) {
 			for(int j = 0; j < mapSlot; j++){
-				cluster.getMapNodes().get(i).getSlots().add(new Slot(j + 1));
-				cluster.getMapNodes().get(i).getSlots().get(j).setNodeID(i + 1);
+				cluster.getMapNodes().get(i).getMapSlots().add(new Slot(j + 1, SlotType.MAP));
+				cluster.getMapNodes().get(i).getMapSlots().get(j).setNodeID(i + 1);
 			}
 		}
 		//遍历所有的reduce node
 		for(int i = 0; i < nodeNum ; i++)
 		{
-			DataNode node = new DataNode(cluster.getMapNodes().size() + i + 1, Stype.Reduce);
+			DataNode node = new DataNode(i + 1);
 			cluster.getReduceNodes().add(node);
 		}
-		//为每一个节点增加2个slot
+		//为每一个节点增加2个REDUCE slot
 		for (int i = 0; i < nodeNum; i++) {
 			for(int j = 0; j < reduceSlot; j++){
-				cluster.getReduceNodes().get(i).getSlots().add(new Slot(j + 1));
-				cluster.getReduceNodes().get(i).getSlots().get(j).setNodeID(i + 1);
+				cluster.getReduceNodes().get(i).getReduceSlots().add(new Slot(j + 1, SlotType.REDUCE));
+				cluster.getReduceNodes().get(i).getReduceSlots().get(j).setNodeID(i + 1);
 			}
 		}
-		//map node + reduce node 成为矩阵大小 10 + 10   从1开始
-		int len = cluster.getMapNodes().size() + cluster.getReduceNodes().size();
+		//map node + reduce node 成为矩阵大小 10   从1开始
+		int len = cluster.getNodeNum();
 		byte[][] topo = new byte[len + 1][];
 		for(int i = 0; i < topo.length; i++)
 			topo[i] = new byte[len + 1];

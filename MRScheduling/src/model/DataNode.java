@@ -1,32 +1,38 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import model.Slot;
 //slot
-public class DataNode {
+public class DataNode implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5333413585806372947L;
 	private int nodeID;
-	private Stype type;
+	private List<Slot> mapSlots = new ArrayList<Slot>();
+	private List<Slot> reduceSlots = new ArrayList<Slot>();
 	
-	//the current longest and shortest task assigned to the slot
-	//private Task longest;
-	//private Task shortest;
-	private List<Task> tasks = new ArrayList<Task>();
-	private List<Slot> slots = new ArrayList<Slot>();
-	public List<Slot> getSlots() {
-		return slots;
+	public List<Slot> getMapSlots() {
+		return mapSlots;
 	}
-	public void setSlots(ArrayList<Slot> slots) {
-		this.slots = slots;
+	public void setMapSlots(List<Slot> mapSlots) {
+		this.mapSlots = mapSlots;
+	}
+	public List<Slot> getReduceSlots() {
+		return reduceSlots;
+	}
+	public void setReduceSlots(List<Slot> reduceSlots) {
+		this.reduceSlots = reduceSlots;
 	}
 	private long curFinishTime;
 	private double sortKey;
 	
-	public DataNode(int id, Stype type)
+	public DataNode(int id)
 	{
 		this.nodeID = id;
-		this.type = type;
 	}
 	//slot type
 	public enum Stype{Map, Reduce}
@@ -36,24 +42,14 @@ public class DataNode {
 	public void setNodeID(int nodeID) {
 		this.nodeID = nodeID;
 	}
-	public Stype getType() {
-		return type;
-	}
-	public void setType(Stype type) {
-		this.type = type;
-	}
+	
 	public long getCurFinishTime() {
 		return curFinishTime;
 	}
 	public void setCurFinishTime(long curFinishTime) {
 		this.curFinishTime = curFinishTime;
 	}
-	public void setTasks(ArrayList<Task> tasks) {
-		this.tasks = tasks;
-	}
-	public List<Task> getTasks() {
-		return tasks;
-	}
+
 	public void setSortKey(double sortKey) {
 		this.sortKey = sortKey;
 	}

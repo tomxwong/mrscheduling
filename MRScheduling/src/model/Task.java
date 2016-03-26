@@ -1,11 +1,16 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Task {
+public class Task implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4748796559605114164L;
 	private int taskID;
 	private int jobID;
 	

@@ -265,7 +265,7 @@ public class Schedule {
 			for (int nodeId : task.getHostList()) {
 				for(DataNode nd : this.cluster.getMapNodes()){
 					if(topo[nodeId][nd.getNodeID()] == 1){
-						for (Slot sl : nd.getSlots()) {
+						for (Slot sl : nd.getMapSlots()) {
 							if(sl.getCurFinishTime() <= currentTime){
 								long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
 								long finishTime = currentTime + tepSetupTime + task.getProcessTime();
@@ -285,7 +285,7 @@ public class Schedule {
 		for (int nodeId : task.getHostList()) {
 			for(DataNode nd : this.cluster.getMapNodes()){
 				if(topo[nodeId][nd.getNodeID()] == 2){
-					for (Slot sl : nd.getSlots()) {
+					for (Slot sl : nd.getMapSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
 							task.setStartTime(currentTime);
 							long tepSetupTime = (long)task.getInputSize() / Cluster.RACK_RATE;
@@ -305,7 +305,7 @@ public class Schedule {
 		for (int nodeId : task.getHostList()) {
 			for(DataNode nd : this.cluster.getMapNodes()){
 				if(topo[nodeId][nd.getNodeID()] == 3){
-					for (Slot sl : nd.getSlots()) {
+					for (Slot sl : nd.getMapSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
 							task.setStartTime(currentTime);
 							long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
@@ -327,89 +327,29 @@ public class Schedule {
 			}
 		}
 	}else{//reduce ÈÎÎñ
-			int maxDataNode = 1	;
 			for (DataNode dn : cluster.getReduceNodes()) {
-				for (Task maptask : task.getJob().getMaps()) {
-					if(topo[dn.getNodeID()][maptask.getReduceDataNode()] == 1){
-						for(Slot sl : dn.getSlots()){
-							if(sl.getCurFinishTime() <= currentTime){
-								maxDataNode = dn.getNodeID();
-								long transferTime = 0;
-								for(Task eachMapTask : task.getJob().getMaps()){
-									if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 1){
-										transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
-									}else if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 2){
-										transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
-									}else{
-										transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
-									}	
-								}
-								task.setStartTime(currentTime);
-								long finishTime = currentTime + transferTime + task.getProcessTime();
-								task.setFinishTime(finishTime);
-								sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());
-								task.setProcessed(true);
-								return transferTime + task.getProcessTime();
+					for(Slot sl : dn.getReduceSlots()){
+						if(sl.getCurFinishTime() <= currentTime){
+							int dataNode = dn.getNodeID();
+							long transferTime = 0;
+							for(Task eachMapTask : task.getJob().getMaps()){
+								if(topo[dataNode][eachMapTask.getReduceDataNode()] == 1){
+									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
+								}else if(topo[dataNode][eachMapTask.getReduceDataNode()] == 2){
+									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
+								}else{
+									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
+								}	
 							}
+							task.setStartTime(currentTime);
+							long finishTime = currentTime + transferTime + task.getProcessTime();
+							task.setFinishTime(finishTime);
+							sl.setCurFinishTime(finishTime);
+							task.setProcessed(true);
+							return transferTime + task.getProcessTime();
 						}
 					}
-				}
-			}
-				for (DataNode dn : cluster.getReduceNodes()) {
-					for (Task maptask : task.getJob().getMaps()) {
-						if(topo[dn.getNodeID()][maptask.getReduceDataNode()] == 2){
-							for(Slot sl : dn.getSlots()){
-								if(sl.getCurFinishTime() <= currentTime){
-									maxDataNode = dn.getNodeID();
-									long transferTime = 0;
-									for(Task eachMapTask : task.getJob().getMaps()){
-										if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 1){
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
-										}else if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 2){
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
-										}else{
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
-										}	
-									}
-									task.setStartTime(currentTime);
-									long finishTime = currentTime + transferTime + task.getProcessTime();
-									task.setFinishTime(finishTime);
-									sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());
-									task.setProcessed(true);
-									return transferTime + task.getProcessTime();
-								}
-							}
-						}
-					}
-				}
-				
-				for (DataNode dn : cluster.getReduceNodes()) {
-					for (Task maptask : task.getJob().getMaps()) {
-						if(topo[dn.getNodeID()][maptask.getReduceDataNode()] == 3){
-							for(Slot sl : dn.getSlots()){
-								if(sl.getCurFinishTime() <= currentTime){
-									maxDataNode = dn.getNodeID();
-									long transferTime = 0;
-									for(Task eachMapTask : task.getJob().getMaps()){
-										if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 1){
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
-										}else if(topo[maxDataNode][eachMapTask.getReduceDataNode()] == 2){
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
-										}else{
-											transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
-										}	
-									}
-									task.setStartTime(currentTime);
-									long finishTime = currentTime + transferTime + task.getProcessTime();
-									task.setFinishTime(finishTime);
-									sl.setCurFinishTime(sl.getCurFinishTime() + transferTime + task.getProcessTime());
-									task.setProcessed(true);
-									return transferTime + task.getProcessTime();
-								}
-							}
-						}
-					}
-				}								
+		}
 		}
 		return -1;
 	}

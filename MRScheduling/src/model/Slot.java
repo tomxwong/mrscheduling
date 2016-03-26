@@ -1,7 +1,15 @@
 package model;
-public class Slot{
+
+import java.io.Serializable;
+
+public class Slot implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1647427867940227748L;
 	private int slotID;
 	private int nodeID;
+	SlotType type;
 	public int getNodeID() {
 		return nodeID;
 	}
@@ -28,9 +36,18 @@ public class Slot{
 		this.curFinishTime = curFinishTime;
 	}
 
-	public Slot(int slotID) {
+	public Slot(int slotID, SlotType type) {
 		super();
 		this.slotID = slotID;
+		this.type = type;
+	}
+
+	public SlotType getType() {
+		return type;
+	}
+
+	public void setType(SlotType type) {
+		this.type = type;
 	}
 
 	public int getSlotID() {
@@ -40,4 +57,5 @@ public class Slot{
 	public void setSlotID(int slotID) {
 		this.slotID = slotID;
 	}
+	public enum SlotType {MAP, REDUCE}
 }

@@ -1,7 +1,11 @@
 
 package algorithms;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -75,9 +79,8 @@ public class MainChunk{
         }
         if (k == arr.size() -1){
             ///////////////////////////////////
-        	Tools.clearSchedule(schedule);
-        	Tools.clearJobList(arr);
-        	Tools.clearDataNode(schedule.getCluster());
+        	//初始化资源信息
+        	Tools.clearResources(schedule);
         	long currentTime = 0;
     		List<Job> jlist = new ArrayList<Job>(arr);
     		List<Job> rJlist = new ArrayList<Job>();
@@ -174,7 +177,7 @@ public class MainChunk{
     }
 	
 	//直接把joblist按顺序调度执行
-	public long runlist(Schedule schedule,List<Job> joblist){
+	public List<Job> runlist(Schedule schedule,List<Job> joblist){
 		// TODO Auto-generated method stub
     	long currentTime = 0;
 		List<Job> jlist = joblist;
@@ -218,8 +221,6 @@ public class MainChunk{
 					//恢复mFinishTime
 					mFinishTime = 0;
 				}
-				i = -1;
-				break;
 			}
 		}
 
@@ -258,17 +259,12 @@ public class MainChunk{
 						FinishTime = job.getFinishTime();
 					}
 				}
-				i = -1;
-				break;
 			}
 		}
-	
-		long penalty = getTotalPenaltyCost(rJlist);
-		joblist = rJlist;
-		return penalty;
+		return rJlist;
     	///////////////////////////////////	
 	}
-	public long execute(Schedule schedule,List<Job> joblist) {
+	public long execute(Schedule schedule,List<Job> joblist) throws Exception {
 		// TODO Auto-generated method stub
     	long currentTime = 0;
 		List<Job> jlist = GetJobSequence(schedule,joblist);
@@ -314,8 +310,6 @@ public class MainChunk{
 					//恢复mFinishTime
 					mFinishTime = 0;
 				}
-				i = -1;
-				break;
 			}
 		}
 
@@ -355,8 +349,6 @@ public class MainChunk{
 						FinishTime = job.getFinishTime();
 					}
 				}
-				i = -1;
-				break;
 			}
 		}
 		System.out.print(" reduce阶段完成时间:" + FinishTime);	
@@ -367,8 +359,9 @@ public class MainChunk{
     	///////////////////////////////////	
 	}
 	//找到能完成的序列
-	public List<List<Job>> getCanFinish(Schedule schedule,List<List<Job>> lists){
+	public List<List<Job>> getCanFinish(Schedule schedule,List<List<Job>> ls){
 			int count = 0;
+			List<List<Job>> lists = new ArrayList<List<Job>>(ls);
 			List<List<Job>> resultLists = new ArrayList<List<Job>>();
 			boolean flag = true;
 			if(lists.isEmpty())
@@ -376,9 +369,9 @@ public class MainChunk{
 			
 			for (List<Job> joblist : lists) {
 				//把当前作业序列执行一遍
-				Tools.clearSchedule(schedule);
-	        	Tools.clearJobList(joblist);
-	        	Tools.clearDataNode(schedule.getCluster());
+				Tools.clearJobInfo(joblist);
+	        	Tools.clearJobTaskList(joblist);
+	        	Tools.clearResources(schedule);
 				runlist(schedule,joblist);
 				for (Job job : joblist) {
 					//拖期完成的情况
@@ -387,7 +380,7 @@ public class MainChunk{
 					}
 				}
 				if(flag == true){
-					resultLists.add(joblist);
+					resultLists.add(new ArrayList<Job>(joblist));
 					count++;
 				}else{
 					flag = true;
@@ -398,7 +391,7 @@ public class MainChunk{
 			return resultLists;
 	}
 	//找到最优序列
-	public List<Job> GetJobSequence(Schedule schedule,List<Job> joblist){
+	public List<Job> GetJobSequence(Schedule schedule,List<Job> joblist) throws Exception{
 		Job ji = null;
 		for(int i = 0; i < joblist.size(); i++)
 		{
@@ -450,6 +443,9 @@ public class MainChunk{
 		if(lists.isEmpty())
 			return null;
 		for (List<Job> joblist : lists) {
+			Tools.clearResources(schedule);
+			Tools.clearJobTaskList(joblist);
+			Tools.clearJobInfo(joblist);
 			Schedule step = new Schedule(schedule);
 			runlist(step,joblist);
 			for (Job job : joblist) {
@@ -458,21 +454,20 @@ public class MainChunk{
 				}
 			}
 			if(flag == true){
-				resultLists.add(joblist);
+				resultLists.add(new ArrayList<Job>(joblist));
 				count++;
 			}else{
 				flag = true;
 			}
 		}
+
 		if(flag == false && count == 0)
 			return null;
 		return getMinTCList(resultLists);
 	}
 	//无法找到ES处理方法
-	public List<Job> minimizePenaltyCost(Schedule schedule, List<Job> joblist){
-		Tools.clearSchedule(schedule);
-    	Tools.clearJobList(joblist);
-    	Tools.clearDataNode(schedule.getCluster());
+	public List<Job> minimizePenaltyCost(Schedule schedule, List<Job> joblist) throws Exception{
+    	Tools.clearResources(schedule);
 		Job ji = null;
 		for(int i = 0; i < joblist.size(); i++)
 		{
@@ -493,19 +488,25 @@ public class MainChunk{
 				ltJobs.add(k, job);
 				listsForCheck.add(ltJobs);
 			}
+			List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
 			//把列表中的每一个序列执行一遍
 			for (List<Job> list2 : listsForCheck) {
-				runlist(schedule, list2);
+				Tools.clearJobInfo(list2);
+				Tools.clearJobTaskList(list2);
+				Tools.clearResources(schedule);
+				List<Job> tList = deepCopy(runlist(schedule, list2));
+				listsForCheckBk.add(tList);
 			}
+			
 			//按照总惩罚代价从小到大排序
-			Collections.sort(listsForCheck, new ListComparator());
+			Collections.sort(listsForCheckBk, new ListComparator());
 			//打印总惩罚代价
-			for (List<Job> list2 : listsForCheck) {
+			for (List<Job> list2 : listsForCheckBk) {
 				printAlist(list2);
 				System.out.print(":");
 				System.out.println(getTotalPenaltyCost(list2));
 			}
-			SES = listsForCheck.get(0);
+			SES = listsForCheckBk.get(0);
 		}
 		return SES;
 	}
@@ -541,16 +542,25 @@ public class MainChunk{
 			System.out.print(job.getJobID() + " ");
 		}
 	}
-	public void start(Schedule schedule){
+	public void start(Schedule schedule) throws Exception{
 		execute(schedule,schedule.getJobs());
 	}
 	public void output() {
 		// TODO Auto-generated method stub
 		
 	}
+	public List<Job> deepCopy(List<Job> src) throws Exception {             
+	    ByteArrayOutputStream byteOut = new ByteArrayOutputStream();             
+	    ObjectOutputStream out = new ObjectOutputStream(byteOut);             
+	    out.writeObject(src);                    
+	    ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());             
+	    ObjectInputStream in =new ObjectInputStream(byteIn);             
+	    @SuppressWarnings("unchecked")
+		List<Job> dest = (List<Job>)in.readObject();             
+	    return dest;         
+	}   
 	
-	
-	public static void main(String[] args){
+	public static void main(String[] args)throws Exception{
 		Parameters p = new Parameters();
 		p.setP_io_rate(0.1);
 
@@ -561,7 +571,7 @@ public class MainChunk{
 		
 		
 		p.setP_rack(2);
-		p.setP_node(3);
+		p.setP_node(4);
 		p.setP_map_slot(2);
 		p.setP_reduce_slot(1);
 		
