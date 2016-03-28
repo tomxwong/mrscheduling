@@ -9,7 +9,11 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.FormatFlagsConversionMismatchException;
 import java.util.List;
+import java.util.Random;
+
+import javax.security.auth.login.FailedLoginException;
 
 import data.Parameters;
 import data.RandomInstanceFile;
@@ -176,8 +180,8 @@ public class MainChunk{
         }
     }
 	
-	//直接把joblist按顺序调度执行
-	public List<Job> runlist(Schedule schedule,List<Job> joblist){
+	//直接把joblist按顺序调度执行,返回惩罚代价
+	public long runlist(Schedule schedule,List<Job> joblist){
 		// TODO Auto-generated method stub
     	long currentTime = 0;
 		List<Job> jlist = joblist;
@@ -261,16 +265,113 @@ public class MainChunk{
 				}
 			}
 		}
-		return rJlist;
+		long penalty = getTotalPenaltyCost(rJlist);
+		return penalty;
     	///////////////////////////////////	
+	}
+	public List<Job> des_reconstructure(Schedule schedule, List<Job> joblist, int d) throws Exception{
+		int n = joblist.size();
+		long t = System.currentTimeMillis();
+        Random r = new Random(t);
+        List<Job> removeJobs = new ArrayList<Job>();
+        for(int i = 0; i < d; i++){
+            //一个0~n-1的随机数 
+            int rn = r.nextInt(n);
+            removeJobs.add(joblist.get(rn));
+            joblist.remove(rn);
+        }
+        Collections.reverse(removeJobs);
+        List<List<Job>> tepLists = new ArrayList<List<Job>>();
+        for(int i = removeJobs.size() - 1; i >= 0; i--){
+        	Job job = removeJobs.get(i);
+        	removeJobs.remove(i);
+        	for(int j = 0; j <= joblist.size(); j++){
+        		List<Job> tepList = new ArrayList<Job>();
+        		tepList = deepCopy(joblist);
+        		//在j位置加入当前待处理作业
+        		tepList.add(j,job);
+        		//插入完成的list加入到list集合中
+        		tepLists.add(tepList);
+        	}
+			List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
+        	for (List<Job> list : tepLists) {
+        		Tools.clearJobInfo(list);
+				Tools.clearJobTaskList(list);
+				Tools.clearResources(schedule);
+				runlist(schedule, list);
+				List<Job> tList = deepCopy(list);
+				listsForCheckBk.add(tList);
+			}
+        	//按照总惩罚代价从小到大排序
+			Collections.sort(listsForCheckBk, new ListComparator());
+			//更新待处理作业序列
+			joblist = listsForCheckBk.get(0);
+        }
+		return joblist;
+	}
+	public int[] getN(int num){
+		Random r = new Random(System.currentTimeMillis());
+		int[] arr = new int[num];
+		for(int i = 0; i < num; ++i){
+			arr[i]=i;
+		}
+		for(int i = num - 1;i >= 0; --i){
+			int temp = arr[i];
+			int tepIndex = r.nextInt(num);
+			arr[i] = arr[tepIndex];
+			arr[tepIndex] = temp;
+		}
+		return arr;
+	}
+	public List<Job> iterative_improvement(Schedule schedule, List<Job> joblist) throws Exception{
+		boolean improve = true;
+		while(improve == true){
+			improve = false;
+			int length = joblist.size();
+	        int[] ra = getN(length);
+			for(int i = 0; i < length; i++){
+				//joblist为是上一个最优作业序列
+				List<Job> list1 = deepCopy(joblist);
+				int pos = ra[i];
+				Job job = list1.get(pos);
+				list1.remove(pos);
+				List<List<Job>> listsForCheck = new ArrayList<List<Job>>();
+				
+				for(int k = 0; k <= list1.size(); k++){
+					List<Job> ltJobs = new ArrayList<Job>(list1);
+					ltJobs.add(k, job);
+					listsForCheck.add(ltJobs);
+				}
+				List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
+				for (List<Job> list2 : listsForCheck) {
+					Tools.clearJobInfo(list2);
+					Tools.clearJobTaskList(list2);
+					Tools.clearResources(schedule);
+					runlist(schedule, list2);
+					List<Job> tList = deepCopy(list2);
+					listsForCheckBk.add(tList);
+				}
+				Collections.sort(listsForCheckBk, new ListComparator());
+				//搜索后的结果
+				List<Job> ll = listsForCheckBk.get(0);
+				if(getTotalPenaltyCost(ll) < getTotalPenaltyCost(joblist)){}
+			}
+		}
+		return null;
 	}
 	public long execute(Schedule schedule,List<Job> joblist) throws Exception {
 		// TODO Auto-generated method stub
     	long currentTime = 0;
 		List<Job> jlist = GetJobSequence(schedule,joblist);
 		List<Job> rJlist = new ArrayList<Job>();
-		System.out.print("新作业序列: ");
+		System.out.print("初始作业序列: ");
 		printAlist(jlist);
+		Tools.clearResources(schedule);
+		Tools.clearJobInfo(jlist);
+		Tools.clearJobTaskList(jlist);
+		//local search part
+		List<Job> list_construct = des_reconstructure(schedule, joblist, 2);
+		
 		//map阶段
 		//maxMapFinishTime用于记录所有作业的最大完成时间
 		long mapFinishTime = Integer.MAX_VALUE;
@@ -354,7 +455,6 @@ public class MainChunk{
 		System.out.print(" reduce阶段完成时间:" + FinishTime);	
 	
 		long penalty = getTotalPenaltyCost(rJlist);
-		joblist = rJlist;
 		return penalty;
     	///////////////////////////////////	
 	}
@@ -494,7 +594,8 @@ public class MainChunk{
 				Tools.clearJobInfo(list2);
 				Tools.clearJobTaskList(list2);
 				Tools.clearResources(schedule);
-				List<Job> tList = deepCopy(runlist(schedule, list2));
+				runlist(schedule, list2);
+				List<Job> tList = deepCopy(list2);
 				listsForCheckBk.add(tList);
 			}
 			
