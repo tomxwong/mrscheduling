@@ -354,10 +354,13 @@ public class MainChunk{
 				Collections.sort(listsForCheckBk, new ListComparator());
 				//搜索后的结果
 				List<Job> ll = listsForCheckBk.get(0);
-				if(getTotalPenaltyCost(ll) < getTotalPenaltyCost(joblist)){}
+				if(getTotalPenaltyCost(ll) < getTotalPenaltyCost(joblist)){
+					joblist = ll;
+					improve = true;
+				}
 			}
 		}
-		return null;
+		return joblist;
 	}
 	public long execute(Schedule schedule,List<Job> joblist) throws Exception {
 		// TODO Auto-generated method stub
@@ -369,91 +372,38 @@ public class MainChunk{
 		Tools.clearResources(schedule);
 		Tools.clearJobInfo(jlist);
 		Tools.clearJobTaskList(jlist);
-		//local search part
-		List<Job> list_construct = des_reconstructure(schedule, joblist, 2);
-		
-		//map阶段
-		//maxMapFinishTime用于记录所有作业的最大完成时间
-		long mapFinishTime = Integer.MAX_VALUE;
-		
-		boolean bFirstFinishMapJob = false;
-		//记录Map最大完成时间
-		long mFinishTime = 0;
-		for (int i = 0; i < jlist.size(); i++) {
-			Job job = jlist.get(i);
-
-			Collections.sort(job.getMaps(), new taskComparator());
-			for (int j = 0; j < job.getMaps().size(); j++){
-				Task task = job.getMaps().get(j);
-				//如果已经处理则继续下一个任务
-				if(task.isProcessed() == true)
-					continue;
-				//按Job顺序调度任务序列，前面的没执行完 则后面的不执行
-				long assignResult = schedule.assignTaskNode(task,currentTime);
-				while(assignResult == -1){
-					assignResult = schedule.assignTaskNode(task,currentTime);
-					currentTime ++;
-				}
-				//更新任务结束时间
-				if(task.getFinishTime() > mFinishTime){
-					mFinishTime = task.getFinishTime();
-				}
-				//如果是Map的最后一个任务，则把此作业加入到reduce队列中
-				if(job.getMaps().indexOf(task) == job.getMapNum() - 1){
-					job.setMapFinishTime(mFinishTime);
-	
-					//第一次完成的Map作业的完成时间成为reduce的开始时间
-					if(bFirstFinishMapJob == false){
-						mapFinishTime = mFinishTime;
-						bFirstFinishMapJob = true;
-					}
-					rJlist.add(job);
-					//恢复mFinishTime
-					mFinishTime = 0;
-				}
+		//初始化部分
+		double aJobProcessTime = 0;
+		for (Job job : jlist) {
+			double mTaskExeTime = 0,rTaskExetime = 0;
+			for (Task task : job.getMaps()) {
+				mTaskExeTime += task.getProcessTime();
+			}
+			for (Task task : job.getMaps()) {
+				rTaskExetime += task.getProcessTime();
+			}
+			mTaskExeTime /= job.getMaps().size();
+			rTaskExetime /= job.getReduces().size();
+			aJobProcessTime += mTaskExeTime;
+			aJobProcessTime += rTaskExetime;
+		}
+		//可调参数
+		int adjustT = 0;
+		//初始化温度
+		long Temperature = (long)(adjustT *(aJobProcessTime)/(joblist.size() * 2 * 10));
+		long iterated_generations = 0;
+		long max_generations = 5000000;
+		while(iterated_generations <= max_generations){
+			List<Job> last_solution = deepCopy(joblist);
+			//解构和重构部分
+			List<Job> list_construct = des_reconstructure(schedule, joblist, 2);
+			//局部搜索部分
+			List<Job> after_localsearch = deepCopy(iterative_improvement(schedule, list_construct));
+			if(getTotalPenaltyCost(after_localsearch) < getTotalPenaltyCost(last_solution)){
+				
 			}
 		}
-
-		currentTime = mapFinishTime;
-		System.out.print("reduce阶段开始时间 :" + currentTime);
-		//reduce阶段
-		//记录reduce阶段结束时间
-		long rFinishTime = 0;
-		
-		long FinishTime = 0;
-		for (int i = 0; i < rJlist.size(); i++) {
-			Job job = rJlist.get(i);
-			Collections.sort(job.getReduces(), new taskComparator());
 			
-			for (int j = 0; j < job.getReduces().size(); j++){
-				Task task = job.getReduces().get(j);
-				//如果已经处理则继续下一个任务
-				if(task.isProcessed() == true)
-					continue;
-				//按Job顺序调度任务序列，前面的没执行完 则后面的不执行
-				long assignResult = schedule.assignTaskNode(task,currentTime);
-				while(assignResult == -1){
-					assignResult = schedule.assignTaskNode(task,currentTime);
-					currentTime ++;
-				}
-				//更新reduce结束时间
-				if(task.getFinishTime() > rFinishTime){
-					rFinishTime = task.getFinishTime();
-				}
-				//如果是Map的最后一个任务，则把此作业加入到reduce队列中
-				if(job.getReduces().indexOf(task) == job.getReduceNum() - 1){
-					job.setReduceFinishTime(rFinishTime);
-					job.setFinishTime(rFinishTime);
-					//恢复rFinishTime
-					rFinishTime = 0;
-					if(job.getFinishTime() > FinishTime){
-						FinishTime = job.getFinishTime();
-					}
-				}
-			}
-		}
-		System.out.print(" reduce阶段完成时间:" + FinishTime);	
-	
 		long penalty = getTotalPenaltyCost(rJlist);
 		return penalty;
     	///////////////////////////////////	
