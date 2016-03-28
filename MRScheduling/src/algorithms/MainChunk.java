@@ -364,9 +364,9 @@ public class MainChunk{
 	}
 	public long execute(Schedule schedule,List<Job> joblist) throws Exception {
 		// TODO Auto-generated method stub
-    	long currentTime = 0;
+		//初始化
 		List<Job> jlist = GetJobSequence(schedule,joblist);
-		List<Job> rJlist = new ArrayList<Job>();
+
 		System.out.print("初始作业序列: ");
 		printAlist(jlist);
 		Tools.clearResources(schedule);
@@ -387,24 +387,37 @@ public class MainChunk{
 			aJobProcessTime += mTaskExeTime;
 			aJobProcessTime += rTaskExetime;
 		}
+		
 		//可调参数
 		int adjustT = 0;
 		//初始化温度
 		long Temperature = (long)(adjustT *(aJobProcessTime)/(joblist.size() * 2 * 10));
 		long iterated_generations = 0;
 		long max_generations = 5000000;
+		//最小的代价列表PI b
+		List<Job> listb = jlist;
 		while(iterated_generations <= max_generations){
-			List<Job> last_solution = deepCopy(joblist);
+			iterated_generations++;
+			//PI'
+			List<Job> last_solution = deepCopy(jlist);
 			//解构和重构部分
-			List<Job> list_construct = des_reconstructure(schedule, joblist, 2);
-			//局部搜索部分
-			List<Job> after_localsearch = deepCopy(iterative_improvement(schedule, list_construct));
-			if(getTotalPenaltyCost(after_localsearch) < getTotalPenaltyCost(last_solution)){
-				
+			last_solution = des_reconstructure(schedule, last_solution, 2);
+			//局部搜索部分 获得PI''
+			List<Job> after_localsearch = iterative_improvement(schedule, deepCopy(last_solution));
+			long penalty1 = getTotalPenaltyCost(after_localsearch);
+			long penalty2 = getTotalPenaltyCost(jlist);
+			if(penalty1 < penalty2){
+				last_solution = after_localsearch;
+				jlist = after_localsearch;
+				if(getTotalPenaltyCost(jlist) < getTotalPenaltyCost(listb)){
+					listb = jlist;
+				}				
+			}else if(Math.random() < Math.pow(Math.E, -(penalty1 - penalty2)/Temperature)){
+				last_solution = after_localsearch;
 			}
 		}
 			
-		long penalty = getTotalPenaltyCost(rJlist);
+		long penalty = getTotalPenaltyCost(listb);
 		return penalty;
     	///////////////////////////////////	
 	}

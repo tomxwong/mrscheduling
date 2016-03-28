@@ -87,7 +87,8 @@ public class TEST{
 //		long t = System.currentTimeMillis();
 //      Random r = new Random(t);
 //      System.out.println(r.nextInt()%10);
-		int [] aa = test.getN(10);
-		System.out.println(aa.toString());
+//		int [] aa = test.getN(10);
+//		System.out.println(aa.toString());
+		System.out.println(Math.random());
 	}
 };
