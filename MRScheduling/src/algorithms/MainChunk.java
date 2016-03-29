@@ -273,16 +273,18 @@ public class MainChunk{
 		int n = joblist.size();
 		long t = System.currentTimeMillis();
         Random r = new Random(t);
+        int remove_n = 1;
         List<Job> removeJobs = new ArrayList<Job>();
         for(int i = 0; i < d; i++){
             //一个0~n-1的随机数 
-            int rn = r.nextInt(n);
+            int rn = r.nextInt(n + 1 - remove_n);
             removeJobs.add(joblist.get(rn));
             joblist.remove(rn);
+            remove_n++;
         }
         Collections.reverse(removeJobs);
-        List<List<Job>> tepLists = new ArrayList<List<Job>>();
         for(int i = removeJobs.size() - 1; i >= 0; i--){
+        	List<List<Job>> tepLists = new ArrayList<List<Job>>();
         	Job job = removeJobs.get(i);
         	removeJobs.remove(i);
         	for(int j = 0; j <= joblist.size(); j++){
@@ -307,6 +309,9 @@ public class MainChunk{
 			//更新待处理作业序列
 			joblist = listsForCheckBk.get(0);
         }
+        Tools.clearJobInfo(joblist);
+        Tools.clearJobTaskList(joblist);
+        Tools.clearResources(schedule);
 		return joblist;
 	}
 	public int[] getN(int num){
@@ -366,13 +371,13 @@ public class MainChunk{
 		// TODO Auto-generated method stub
 		//初始化
 		List<Job> jlist = GetJobSequence(schedule,joblist);
-
 		System.out.print("初始作业序列: ");
 		printAlist(jlist);
 		Tools.clearResources(schedule);
 		Tools.clearJobInfo(jlist);
 		Tools.clearJobTaskList(jlist);
 		//初始化部分
+		//用于初始化温度
 		double aJobProcessTime = 0;
 		for (Job job : jlist) {
 			double mTaskExeTime = 0,rTaskExetime = 0;
@@ -389,7 +394,7 @@ public class MainChunk{
 		}
 		
 		//可调参数
-		int adjustT = 0;
+		int adjustT = 50;
 		//初始化温度
 		long Temperature = (long)(adjustT *(aJobProcessTime)/(joblist.size() * 2 * 10));
 		long iterated_generations = 0;
@@ -398,7 +403,7 @@ public class MainChunk{
 		List<Job> listb = jlist;
 		while(iterated_generations <= max_generations){
 			iterated_generations++;
-			//PI'
+			//PI'								PI
 			List<Job> last_solution = deepCopy(jlist);
 			//解构和重构部分
 			last_solution = des_reconstructure(schedule, last_solution, 2);
@@ -407,14 +412,16 @@ public class MainChunk{
 			long penalty1 = getTotalPenaltyCost(after_localsearch);
 			long penalty2 = getTotalPenaltyCost(jlist);
 			if(penalty1 < penalty2){
-				last_solution = after_localsearch;
 				jlist = after_localsearch;
 				if(getTotalPenaltyCost(jlist) < getTotalPenaltyCost(listb)){
 					listb = jlist;
-				}				
+				}
+			//以一定的概率接受当前的较差解
 			}else if(Math.random() < Math.pow(Math.E, -(penalty1 - penalty2)/Temperature)){
 				last_solution = after_localsearch;
 			}
+			//降低温度
+			Temperature *= 0.8;
 		}
 			
 		long penalty = getTotalPenaltyCost(listb);
@@ -574,7 +581,6 @@ public class MainChunk{
 		}
 		return SES;
 	}
-	
 	//找到TC最小的 
 	public List<Job> getMinTCList(List<List<Job>> lists){
 			int index = -1;
@@ -599,7 +605,6 @@ public class MainChunk{
 		}
 		return totalPC;
 	}
-
 	//打印ArrayList
 	public void printAlist(List<Job> joblist){
 		for (Job job : joblist) {
