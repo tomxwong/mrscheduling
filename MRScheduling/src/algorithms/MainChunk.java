@@ -129,8 +129,6 @@ public class MainChunk{
     					//恢复mFinishTime
     					mFinishTime = 0;
     				}
-    				i = -1;
-    				break;
     			}
     		}
   		
@@ -170,8 +168,6 @@ public class MainChunk{
     						FinishTime = job.getFinishTime();
     					}
     				}
-    				i = -1;
-    				break;
     			}
     		}
     		System.out.print(" reduce阶段完成时间:" + FinishTime);	
@@ -195,7 +191,6 @@ public class MainChunk{
 		long mFinishTime = 0;
 		for (int i = 0; i < jlist.size(); i++) {
 			Job job = jlist.get(i);
-
 			Collections.sort(job.getMaps(), new taskComparator());
 			for (int j = 0; j < job.getMaps().size(); j++){
 				Task task = job.getMaps().get(j);
@@ -404,12 +399,18 @@ public class MainChunk{
 		while(iterated_generations <= max_generations){
 			iterated_generations++;
 			//PI'								PI
+			Tools.clearJobInfo(jlist);
+			Tools.clearJobTaskList(jlist);
+			Tools.clearResources(schedule);
 			List<Job> last_solution = deepCopy(jlist);
 			//解构和重构部分
 			last_solution = des_reconstructure(schedule, last_solution, 2);
 			//局部搜索部分 获得PI''
 			List<Job> after_localsearch = iterative_improvement(schedule, deepCopy(last_solution));
+			runlist(schedule, after_localsearch);
 			long penalty1 = getTotalPenaltyCost(after_localsearch);
+			Tools.clearResources(schedule);
+			runlist(schedule, jlist);
 			long penalty2 = getTotalPenaltyCost(jlist);
 			if(penalty1 < penalty2){
 				jlist = after_localsearch;
