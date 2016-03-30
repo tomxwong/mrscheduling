@@ -201,13 +201,13 @@ public class RandomInstance {
 		p.setP_reduce_slot(1);
 		
 		p.setP_map_num_miu(40);
-		p.setP_map_num_sig(55);
+		p.setP_map_num_sig(20);
 		p.setP_map_dura_miu(50);
 		p.setP_map_dura_sig(20);
 		
-		p.setP_reduce_num_miu(30);
-		p.setP_reduce_num_sig(45);
-		p.setP_reduce_dura_miu(100);
+		p.setP_reduce_num_miu(40);
+		p.setP_reduce_num_sig(20);
+		p.setP_reduce_dura_miu(80);
 		p.setP_reduce_dura_sig(30);
 		
 		//extra add
@@ -222,8 +222,8 @@ public class RandomInstance {
 		
 		RandomInstance ri = new RandomInstance(p, p.getP_jobs() + "_1");
 		//产生30个实例
-		int replica = 30;
-		int[] jobs = {5,20,50,100};
+		int replica = 10;
+		int[] jobs = {50,100,150,200,250};
 		for(int job: jobs)
 		{
 			//设置每一个的作业数量

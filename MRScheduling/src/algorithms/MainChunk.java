@@ -272,13 +272,13 @@ public class MainChunk{
 		return penalty;
     	///////////////////////////////////	
 	}
-	public List<Job> des_reconstructure(Schedule schedule, List<Job> joblist, int d) throws Exception{
+	public List<Job> des_reconstructure(Schedule schedule, List<Job> joblist, double d) throws Exception{
 		int n = joblist.size();
 		long t = System.currentTimeMillis();
         Random r = new Random(t);
         int remove_n = 1;
         List<Job> removeJobs = new ArrayList<Job>();
-        for(int i = 0; i < d; i++){
+        for(int i = 0; i < joblist.size() * d; i++){
             //一个0~n-1的随机数 
             int rn = r.nextInt(n + 1 - remove_n);
             removeJobs.add(joblist.get(rn));
@@ -416,6 +416,7 @@ public class MainChunk{
 		//初始化温度
 		long Temperature = (long)(adjustT *(aJobProcessTime)/(joblist.size() * 2 * 10));
 		long iterated_generations = 0;
+		//固定迭代次数为50
 		long max_generations = 50;
 		//最小的代价列表PI b
 		List<Job> listb = jlist;
@@ -429,7 +430,8 @@ public class MainChunk{
 			System.out.println(iterated_generations);
 			iterated_generations++;
 			//解构和重构部分
-			last_solution = des_reconstructure(schedule, last_solution, 3);
+			//固定k为作业数量的1/3
+			last_solution = des_reconstructure(schedule, last_solution, (double)1/5);
 			//////////////////////
 			printAlist(last_solution);
 			System.out.println(getTotalPenaltyCost(last_solution));
@@ -487,6 +489,9 @@ public class MainChunk{
 		System.out.println("final list:");
 		printAlist(listb);
 		System.out.println(" penalty:" + penalty);
+		//////////////////////////////////////
+		//bufferWritter.write("tc_fix_h_d_" + listb.size());
+		//////////////////////////////////////
 		bufferWritter.close();
 		return penalty;
     	///////////////////////////////////	
@@ -713,8 +718,8 @@ public class MainChunk{
 		
 		p.setP_rack(2);
 		p.setP_node(4);
-		p.setP_map_slot(2);
-		p.setP_reduce_slot(1);
+		p.setP_map_slot(4);
+		p.setP_reduce_slot(2);
 		
 		
 		p.setP_map_num_miu(15);
@@ -731,7 +736,9 @@ public class MainChunk{
 		p.setP_job_deadline_miu(200);
 		p.setP_job_deadline_sigma(100);
 		
-		RandomInstanceFile rf = new RandomInstanceFile(p, "..\\..\\TestData\\");
+		
+		String fileName ="..\\..\\TestData\\";
+		RandomInstanceFile rf = new RandomInstanceFile(p, fileName);
 		try {
 			Schedule s = rf.newInstance();
 			s.setIoRate(p.getP_io_rate());

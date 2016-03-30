@@ -48,7 +48,7 @@ public class RandomInstanceFile {
 		//this.instName = INST_PREFIX + name;
 		this.inputPath = input;
 		try {
-			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_20_1.txt"));
+			this.reader = new BufferedReader(new FileReader(inputPath));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
