@@ -48,7 +48,7 @@ public class RandomInstanceFile {
 		//this.instName = INST_PREFIX + name;
 		this.inputPath = input;
 		try {
-			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_5_1.txt"));
+			this.reader = new BufferedReader(new FileReader(inputPath + "MR_I_BI_NEW_20_1.txt"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -219,25 +219,25 @@ public class RandomInstanceFile {
 		}
 
 		//写到本地文件
-		File file =new File("..\\file.txt");
-		if(!file.exists()){
-		   file.createNewFile();
-		}
-		FileWriter fileWritter = new FileWriter(file.getName(),true);
-        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+//		File file =new File("..\\file.txt");
+//		if(!file.exists()){
+//		   file.createNewFile();
+//		}
+//		FileWriter fileWritter = new FileWriter(file.getName(),true);
+//        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
 		for (Job job : s.getJobs()) {
 			for (Task task : job.getMaps())
 				for (int it : task.getDataLocations().keySet()){
-					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
+//					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
 			        System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" task type: "+task.getType()+" dataLocationsSize: "+task.getDataLocations().size()+" node id: "+it+" data size: "+task.getDataLocations().get(it));
 				}
 			for (Task task : job.getReduces())
 				for (int it : task.getDataLocations().keySet()){
-					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
+//					bufferWritter.write("job id: \t"+job.getJobID()+"\t task id: \t"+task.getTaskID()+"\t task type: \t"+task.getType()+"\t dataLocationsSize: \t"+task.getDataLocations().size()+"\t node id: \t"+it+"\t data size: \t"+task.getDataLocations().get(it)+"\n");
 					System.out.println("job id: "+job.getJobID()+" task id: "+task.getTaskID()+" task type: "+task.getType()+" dataLocationsSize: "+task.getDataLocations().size()+" node id: "+it+" data size: "+task.getDataLocations().get(it));
 				}
 		}
-		bufferWritter.close();
+//		bufferWritter.close();
 		this.setResult(s);
 		return s;
 	}

@@ -21,13 +21,13 @@ public class Job implements Serializable{
 	//input data size of a job, evenly distributed to each map task
 	private int dataSize;
 	//only used in some methods
-	private long startTime;
+	private double startTime;
 	private int priority;
-	private long deadline;
-	public long getDeadline() {
+	private double deadline;
+	public double getDeadline() {
 		return deadline;
 	}
-	public void setDeadline(long deadline) {
+	public void setDeadline(double deadline) {
 		this.deadline = deadline;
 	}
 
@@ -52,34 +52,34 @@ public class Job implements Serializable{
 		Job.task_size = task_size;
 	}
 	private int maxMapMachine;
-	private long mapTC;
-	private long reduceTC;
-	private long penaltyCost;
-	public long getPenaltyCost() {
+	private double mapTC;
+	private double reduceTC;
+	private double penaltyCost;
+	public double getPenaltyCost() {
 		return penaltyCost;
 	}
-	public void setPenaltyCost(long penaltyCost) {
+	public void setPenaltyCost(double penaltyCost) {
 		this.penaltyCost = penaltyCost;
 	}
-	public long getMapTC() {
+	public double getMapTC() {
 		return mapTC;
 	}
-	public void setMapTC(long mapTC) {
+	public void setMapTC(double mapTC) {
 		this.mapTC = mapTC;
 	}
-	public long getReduceTC() {
+	public double getReduceTC() {
 		return reduceTC;
 	}
-	public void setReduceTC(long reduceTC) {
+	public void setReduceTC(double reduceTC) {
 		this.reduceTC = reduceTC;
 	}
-	private long finishTime;
-	private long mapFinishTime;
-	private long reduceFinishTime;
-	public long getReduceFinishTime() {
+	private double finishTime;
+	private double mapFinishTime;
+	private double reduceFinishTime;
+	public double getReduceFinishTime() {
 		return reduceFinishTime;
 	}
-	public void setReduceFinishTime(long reduceFinishTime) {
+	public void setReduceFinishTime(double reduceFinishTime) {
 		this.reduceFinishTime = reduceFinishTime;
 	}
 	private ArrayList<Task> maps = new ArrayList<Task>();
@@ -117,10 +117,10 @@ public class Job implements Serializable{
 	public void setReduceNum(int reduceNum) {
 		this.reduceNum = reduceNum;
 	}
-	public long getStartTime() {
+	public double getStartTime() {
 		return startTime;
 	}
-	public void setStartTime(long startTime) {
+	public void setStartTime(double startTime) {
 		this.startTime = startTime;
 	}
 	public int getPriority() {
@@ -153,16 +153,16 @@ public class Job implements Serializable{
 	public void setReduces(ArrayList<Task> reduces) {
 		this.reduces = reduces;
 	}
-	public long getFinishTime() {
+	public double getFinishTime() {
 		return finishTime;
 	}
-	public void setFinishTime(long finishTime) {
+	public void setFinishTime(double finishTime) {
 		this.finishTime = finishTime;
 	}
-	public long getMapFinishTime() {
+	public double getMapFinishTime() {
 		return mapFinishTime;
 	}
-	public void setMapFinishTime(long mapFinishTime) {
+	public void setMapFinishTime(double mapFinishTime) {
 		this.mapFinishTime = mapFinishTime;
 	}
 	/*public ArrayList<DataNode> getMapTaskSlots() {

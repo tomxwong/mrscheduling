@@ -1,19 +1,22 @@
 
 package algorithms;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.FormatFlagsConversionMismatchException;
 import java.util.List;
 import java.util.Random;
 
-import javax.security.auth.login.FailedLoginException;
+
+
 
 import data.Parameters;
 import data.RandomInstanceFile;
@@ -58,7 +61,7 @@ public class MainChunk{
 			List<Job> list1 = (List<Job>)o1;
 			List<Job> list2 = (List<Job>)o2;
 			
-			long r1 = getTotalPenaltyCost(list1),r2 = getTotalPenaltyCost(list2);
+			double r1 = getTotalPenaltyCost(list1),r2 = getTotalPenaltyCost(list2);
 			if(r1 > r2){
 				return 1;
 			}else if(r1 == r2){
@@ -75,28 +78,27 @@ public class MainChunk{
 		// TODO Auto-generated method stub
 		//Tools.clearSchedule(schedule);		
 	}
-	public void permute(java.util.List<Job> arr, int k,Schedule schedule){
+	public void permute(List<Job> arr, int k,Schedule schedule, BufferedWriter bufferWritter) throws IOException{
         for(int i = k; i < arr.size(); i++){
-            java.util.Collections.swap(arr, i, k);
-            permute(arr, k+1,schedule);
-            java.util.Collections.swap(arr, k, i);
+            Collections.swap(arr, i, k);
+            permute(arr, k+1,schedule,bufferWritter);
+            Collections.swap(arr, k, i);
         }
         if (k == arr.size() -1){
             ///////////////////////////////////
         	//初始化资源信息
         	Tools.clearResources(schedule);
-        	long currentTime = 0;
+        	Tools.clearJobInfo(arr);
+        	double currentTime = 0;
     		List<Job> jlist = new ArrayList<Job>(arr);
     		List<Job> rJlist = new ArrayList<Job>();
-    		System.out.print("作业序列: ");
-    		printAlist(jlist);
     		//map阶段
     		//maxMapFinishTime用于记录所有作业的最大完成时间
-    		long mapFinishTime = Integer.MAX_VALUE;
+    		double mapFinishTime = Integer.MAX_VALUE;
     		
     		boolean bFirstFinishMapJob = false;
 			//记录Map最大完成时间
-			long mFinishTime = 0;
+    		double mFinishTime = 0;
     		for (int i = 0; i < jlist.size(); i++) {
     			Job job = jlist.get(i);
 
@@ -133,12 +135,11 @@ public class MainChunk{
     		}
   		
     		currentTime = mapFinishTime;
-    		System.out.print("reduce阶段开始时间 :" + currentTime);
     		//reduce阶段
     		//记录reduce阶段结束时间
-			long rFinishTime = 0;
+    		double rFinishTime = 0;
 			
-    		long FinishTime = 0;
+			double FinishTime = 0;
     		for (int i = 0; i < rJlist.size(); i++) {
     			Job job = rJlist.get(i);
     			Collections.sort(job.getReduces(), new taskComparator());
@@ -170,25 +171,32 @@ public class MainChunk{
     				}
     			}
     		}
-    		System.out.print(" reduce阶段完成时间:" + FinishTime);	
-    		System.out.println("总惩罚代价: " + getTotalPenaltyCost(rJlist));
+    		
+    		
+//    		for (Job job : rJlist) {
+//    			bufferWritter.write(job.getJobID() + "\t");
+//    		}
+//    		bufferWritter.write(getTotalPenaltyCost(rJlist)+"\n");
+    		printAlist(rJlist);
+    		System.out.print(" :");	
+    		System.out.println(getTotalPenaltyCost(rJlist));
         	///////////////////////////////////
         }
     }
 	
 	//直接把joblist按顺序调度执行,返回惩罚代价
-	public long runlist(Schedule schedule,List<Job> joblist){
+	public double runlist(Schedule schedule,List<Job> joblist){
 		// TODO Auto-generated method stub
-    	long currentTime = 0;
+		double currentTime = 0;
 		List<Job> jlist = joblist;
 		List<Job> rJlist = new ArrayList<Job>();
 		
 		//map阶段
 		//maxMapFinishTime用于记录所有作业的最大完成时间
-		long mapFinishTime = Integer.MAX_VALUE;
+		double mapFinishTime = Integer.MAX_VALUE;
 		boolean bFirstFinishMapJob = false;
 		//记录Map最大完成时间
-		long mFinishTime = 0;
+		double mFinishTime = 0;
 		for (int i = 0; i < jlist.size(); i++) {
 			Job job = jlist.get(i);
 			Collections.sort(job.getMaps(), new taskComparator());
@@ -226,9 +234,9 @@ public class MainChunk{
 		currentTime = mapFinishTime;
 		//reduce阶段
 		//记录reduce阶段结束时间
-		long rFinishTime = 0;
+		double rFinishTime = 0;
 		
-		long FinishTime = 0;
+		double FinishTime = 0;
 		for (int i = 0; i < rJlist.size(); i++) {
 			Job job = rJlist.get(i);
 			Collections.sort(job.getReduces(), new taskComparator());
@@ -260,7 +268,7 @@ public class MainChunk{
 				}
 			}
 		}
-		long penalty = getTotalPenaltyCost(rJlist);
+		double penalty = getTotalPenaltyCost(rJlist);
 		return penalty;
     	///////////////////////////////////	
 	}
@@ -277,7 +285,7 @@ public class MainChunk{
             joblist.remove(rn);
             remove_n++;
         }
-        Collections.reverse(removeJobs);
+ 
         for(int i = removeJobs.size() - 1; i >= 0; i--){
         	List<List<Job>> tepLists = new ArrayList<List<Job>>();
         	Job job = removeJobs.get(i);
@@ -293,9 +301,13 @@ public class MainChunk{
 			List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
         	for (List<Job> list : tepLists) {
         		Tools.clearJobInfo(list);
-				Tools.clearJobTaskList(list);
 				Tools.clearResources(schedule);
 				runlist(schedule, list);
+				/////////////////////////////////
+				//printAlist(list);
+				//System.out.print(":");
+				//System.out.println(getTotalPenaltyCost(list));
+				/////////////////////////////////
 				List<Job> tList = deepCopy(list);
 				listsForCheckBk.add(tList);
 			}
@@ -304,9 +316,6 @@ public class MainChunk{
 			//更新待处理作业序列
 			joblist = listsForCheckBk.get(0);
         }
-        Tools.clearJobInfo(joblist);
-        Tools.clearJobTaskList(joblist);
-        Tools.clearResources(schedule);
 		return joblist;
 	}
 	public int[] getN(int num){
@@ -345,9 +354,13 @@ public class MainChunk{
 				List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
 				for (List<Job> list2 : listsForCheck) {
 					Tools.clearJobInfo(list2);
-					Tools.clearJobTaskList(list2);
 					Tools.clearResources(schedule);
 					runlist(schedule, list2);
+					//////////////////////
+					//printAlist(list2);
+					//System.out.print(":");
+					//System.out.println(getTotalPenaltyCost(list2));
+					//////////////////////
 					List<Job> tList = deepCopy(list2);
 					listsForCheckBk.add(tList);
 				}
@@ -360,17 +373,27 @@ public class MainChunk{
 				}
 			}
 		}
+		Tools.clearJobInfo(joblist);
+		Tools.clearResources(schedule);
 		return joblist;
 	}
-	public long execute(Schedule schedule,List<Job> joblist) throws Exception {
+	public double execute(Schedule schedule,List<Job> joblist) throws Exception {
 		// TODO Auto-generated method stub
+		//写入本地文件///////////////////////////////
+		File file =new File("..\\result.txt");
+		if(!file.exists()){
+		    file.createNewFile();
+		}
+		//写到本地文件
+		FileWriter fileWritter = new FileWriter(file.getName(),true);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);	
+		///////////////////////////////////////////
 		//初始化
 		List<Job> jlist = GetJobSequence(schedule,joblist);
 		System.out.print("初始作业序列: ");
 		printAlist(jlist);
 		Tools.clearResources(schedule);
 		Tools.clearJobInfo(jlist);
-		Tools.clearJobTaskList(jlist);
 		//初始化部分
 		//用于初始化温度
 		double aJobProcessTime = 0;
@@ -393,39 +416,78 @@ public class MainChunk{
 		//初始化温度
 		long Temperature = (long)(adjustT *(aJobProcessTime)/(joblist.size() * 2 * 10));
 		long iterated_generations = 0;
-		long max_generations = 5000000;
+		long max_generations = 50;
 		//最小的代价列表PI b
 		List<Job> listb = jlist;
+		//PI'								PI
+		Tools.clearJobInfo(jlist);
+		Tools.clearResources(schedule);
+		List<Job> last_solution = deepCopy(jlist);
 		while(iterated_generations <= max_generations){
+			////////////////////////////////
+			System.out.print("迭代次数：");
+			System.out.println(iterated_generations);
 			iterated_generations++;
-			//PI'								PI
-			Tools.clearJobInfo(jlist);
-			Tools.clearJobTaskList(jlist);
-			Tools.clearResources(schedule);
-			List<Job> last_solution = deepCopy(jlist);
 			//解构和重构部分
-			last_solution = des_reconstructure(schedule, last_solution, 2);
+			last_solution = des_reconstructure(schedule, last_solution, 3);
+			//////////////////////
+			printAlist(last_solution);
+			System.out.println(getTotalPenaltyCost(last_solution));
+			for (Job job : last_solution) {
+				bufferWritter.write(job.getJobID() + "\t");
+			}
+			bufferWritter.write((int)getTotalPenaltyCost(last_solution));
+			bufferWritter.write("\n");
+			//////////////////////
 			//局部搜索部分 获得PI''
+	        Tools.clearJobInfo(last_solution);
+	        Tools.clearResources(schedule);
+	        
 			List<Job> after_localsearch = iterative_improvement(schedule, deepCopy(last_solution));
 			runlist(schedule, after_localsearch);
-			long penalty1 = getTotalPenaltyCost(after_localsearch);
+			//////////////////////
+			printAlist(after_localsearch);
+			System.out.println(getTotalPenaltyCost(after_localsearch));
+			for (Job job : after_localsearch) {
+				bufferWritter.write(job.getJobID() + "\t");
+			}
+			bufferWritter.write((int)getTotalPenaltyCost(after_localsearch));
+			bufferWritter.write("\n");
+			//////////////////////
+			double penalty1 = getTotalPenaltyCost(after_localsearch);
 			Tools.clearResources(schedule);
 			runlist(schedule, jlist);
-			long penalty2 = getTotalPenaltyCost(jlist);
+			//////////////////////
+			printAlist(after_localsearch);
+			System.out.println(getTotalPenaltyCost(after_localsearch));
+			for (Job job : after_localsearch) {
+				bufferWritter.write(job.getJobID() + "\t");
+			}
+			bufferWritter.write((int)getTotalPenaltyCost(after_localsearch));
+			bufferWritter.write("\n");
+			//////////////////////
+			double penalty2 = getTotalPenaltyCost(jlist);
 			if(penalty1 < penalty2){
 				jlist = after_localsearch;
 				if(getTotalPenaltyCost(jlist) < getTotalPenaltyCost(listb)){
 					listb = jlist;
 				}
 			//以一定的概率接受当前的较差解
-			}else if(Math.random() < Math.pow(Math.E, -(penalty1 - penalty2)/Temperature)){
-				last_solution = after_localsearch;
+      			}else if(Math.random() < Math.pow(Math.E, -(penalty1 - penalty2)/Temperature)){
+      				Tools.clearJobInfo(after_localsearch);
+      				Tools.clearJobInfo(jlist);
+      				Tools.clearResources(schedule);
+      				last_solution = after_localsearch;
 			}
 			//降低温度
 			Temperature *= 0.8;
 		}
 			
-		long penalty = getTotalPenaltyCost(listb);
+		double penalty = getTotalPenaltyCost(listb);
+		System.out.println("final list:");
+		printAlist(listb);
+		System.out.println(" penalty:" + penalty);
+		bufferWritter.close();
 		return penalty;
     	///////////////////////////////////	
 	}
@@ -441,9 +503,12 @@ public class MainChunk{
 			for (List<Job> joblist : lists) {
 				//把当前作业序列执行一遍
 				Tools.clearJobInfo(joblist);
-	        	Tools.clearJobTaskList(joblist);
 	        	Tools.clearResources(schedule);
 				runlist(schedule,joblist);
+				//////////////////////
+				printAlist(joblist);
+				System.out.println(getTotalPenaltyCost(joblist));
+				//////////////////////
 				for (Job job : joblist) {
 					//拖期完成的情况
 					if(job.getFinishTime() > job.getDeadline()){
@@ -515,10 +580,13 @@ public class MainChunk{
 			return null;
 		for (List<Job> joblist : lists) {
 			Tools.clearResources(schedule);
-			Tools.clearJobTaskList(joblist);
 			Tools.clearJobInfo(joblist);
 			Schedule step = new Schedule(schedule);
 			runlist(step,joblist);
+			//////////////////////
+			printAlist(joblist);
+			System.out.println(getTotalPenaltyCost(joblist));
+			//////////////////////
 			for (Job job : joblist) {
 				if(job.getFinishTime() > job.getDeadline()){
 					flag = false;
@@ -563,9 +631,12 @@ public class MainChunk{
 			//把列表中的每一个序列执行一遍
 			for (List<Job> list2 : listsForCheck) {
 				Tools.clearJobInfo(list2);
-				Tools.clearJobTaskList(list2);
 				Tools.clearResources(schedule);
 				runlist(schedule, list2);
+				//////////////////////
+				printAlist(list2);
+				System.out.println(getTotalPenaltyCost(list2));
+				//////////////////////
 				List<Job> tList = deepCopy(list2);
 				listsForCheckBk.add(tList);
 			}
@@ -585,9 +656,9 @@ public class MainChunk{
 	//找到TC最小的 
 	public List<Job> getMinTCList(List<List<Job>> lists){
 			int index = -1;
-			long minTC = Integer.MAX_VALUE;
+			double minTC = Integer.MAX_VALUE;
 			for (List<Job> list : lists) {
-				long tpc = 0;
+				double tpc = 0;
 				for (Job job : list) {
 					tpc += ((job.getFinishTime() - job.getDeadline()) >= 0 ? (job.getFinishTime() - job.getDeadline()) : 0);
 				}
@@ -599,8 +670,8 @@ public class MainChunk{
 			return lists.get(index);
 	}
 	//计算当前作业顺序的Total TimeCost
-	public long getTotalPenaltyCost(List<Job> joblist){
-		long totalPC = 0;
+	public double getTotalPenaltyCost(List<Job> joblist){
+		double totalPC = 0;
 		for (Job job : joblist) {
 			totalPC += ((job.getFinishTime() - job.getDeadline()) > 0 ? (job.getFinishTime() - job.getDeadline()) : 0);
 		}
@@ -667,7 +738,15 @@ public class MainChunk{
 			MainChunk mc = new MainChunk(s);
 			//mc.init();
 			//mc.output();
-			//mc.permute(mc.schedule.getJobs(), 0,s);
+//			File file =new File("..\\permutate.txt");
+//			if(!file.exists()){
+//			   file.createNewFile();
+//			}
+//			//写到本地文件
+//			FileWriter fileWritter = new FileWriter(file.getName(),true);
+//	        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+//			mc.permute(s.getJobs(), 0,s,bufferWritter);
+//			bufferWritter.close();
 			mc.start(s);
 		} catch (IOException e) {
 			e.printStackTrace();

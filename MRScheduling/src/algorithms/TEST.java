@@ -89,6 +89,6 @@ public class TEST{
 //      System.out.println(r.nextInt()%10);
 //		int [] aa = test.getN(10);
 //		System.out.println(aa.toString());
-		System.out.println(Math.random());
+		System.out.println(ll);
 	}
 };

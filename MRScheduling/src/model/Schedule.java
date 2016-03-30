@@ -20,19 +20,13 @@ public class Schedule {
 	private Cluster cluster;
 	private double ioRate = 0;
 	
-	//record the current longest finishing time of all the slots
-	private long firstAvail = 0;
+	//record the current doubleest finishing time of all the slots
+	private double firstAvail = 0;
 	
 	private DataNode firstSlot = null;
 	
 	//record the current finishing time of each slot in order
 	private ArrayList<DataNode> curAvailList = new ArrayList<DataNode>();
-	//private BinaryHeap earlestSlot = new BinaryHeap(true, new SlotComparator());
-	//the latest map task time of each job
-	private Map<Integer, Long> jobMaxMapTime = new HashMap<Integer, Long>();
-	
-	
-	
 	
 	//the assignment of tasks to slot
 	//integer:nodeID,list:tasks
@@ -42,7 +36,7 @@ public class Schedule {
 	private Map<Integer, Integer> mapTask2Slot = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> reduceTask2Slot = new HashMap<Integer, Integer>();
 		
-	private long makespan = 0;
+	private double makespan = 0;
 	
 	public Schedule(Schedule s)
 	{
@@ -72,11 +66,11 @@ public class Schedule {
 			else{
 				for(int i : t.getHostList()){
 					if(cluster.getTopo()[i][n.getNodeID()] == 2){
-						t.setSetupTime((long)t.getInputSize() / Cluster.RACK_RATE);
+						t.setSetupTime((double)t.getInputSize() / Cluster.RACK_RATE);
 						return 2;
 					}
 				}
-				t.setSetupTime((long)t.getInputSize() / Cluster.REMOTE_RATE);//note:distinguish rack and remote
+				t.setSetupTime((double)t.getInputSize() / Cluster.REMOTE_RATE);//note:distinguish rack and remote
 				return 3;
 			}
 		}
@@ -95,7 +89,7 @@ public class Schedule {
 				else
 					rRemote += unitSize / Cluster.REMOTE_RATE;
 			}
-			t.setSetupTime((long)(rLocal + rRack + rRemote));
+			t.setSetupTime((double)(rLocal + rRack + rRemote));
 			if(getMax(rLocal, rRack, rRemote) == 1)
 				return 1;
 			else if(getMax(rLocal, rRack, rRemote) == 2) return 2;
@@ -111,44 +105,9 @@ public class Schedule {
 		else if(rLocal < rRack) return 2;
 		else return 1;
 	}
-	public long calculateMakespan()
+	public double calculateMakespan()
 	{
-		//calculateSetupTime();
-		
-		/*s.setcMapTime(new long[s.getMaps().size()]);
-		s.setcReduceTime(new long[s.getReduces().size()]);*/
-		
-		long[] curMapLast = new long[cluster.getMapNodes().size()];
-		long[] curReduceLast = new long[cluster.getReduceNodes().size()];
-		
-		//long maxMap = Long.MIN_VALUE;
-		for(int key : mapAssignment.keySet())
-		{
-			for(Task t : mapAssignment.get(key))
-			{
-				t.setFinishTime(curMapLast[key - 1] + t.getSetupTime() + t.getProcessTime());
-				curMapLast[key - 1] = t.getFinishTime();
-				if(t.getFinishTime() > jobMaxMapTime.get(t.getJob().getJobID()))
-					jobMaxMapTime.put(t.getJob().getJobID(), t.getFinishTime());
-			}
-		}
-		
-		long maxReduce = Long.MIN_VALUE;
-		int mapSlots = cluster.getMapNodes().size();
-		for(int key : reduceAssignment.keySet())
-		{
-			for(Task t : reduceAssignment.get(key))
-			{
-				if(jobMaxMapTime.get(t.getJob().getJobID()) > curReduceLast[key - mapSlots - 1])
-					t.setFinishTime(jobMaxMapTime.get(t.getJob().getJobID()) + t.getSetupTime() + t.getProcessTime());
-				else
-					t.setFinishTime(curMapLast[key - 1] + t.getSetupTime() + t.getProcessTime());
-				curReduceLast[key - mapSlots - 1] = t.getFinishTime();
-			}
-			if(curReduceLast[key - mapSlots - 1] > maxReduce)
-				maxReduce = curReduceLast[key - mapSlots - 1];
-		}
-		return maxReduce;
+		return 0;
 	}
 	
 	public List<Task> getMaps() {
@@ -175,11 +134,11 @@ public class Schedule {
 		this.jobs = jobs;
 	}
 
-	public long getMakespan() {
+	public double getMakespan() {
 		return makespan;
 	}
 
-	public void setMakespan(long makespan) {
+	public void setMakespan(double makespan) {
 		this.makespan = makespan;
 	}
 	public Map<Integer, ArrayList<Task>> getMapAssignment() {
@@ -194,12 +153,7 @@ public class Schedule {
 	public void setReduceAssignment(Map<Integer, ArrayList<Task>> reduceAssignment) {
 		this.reduceAssignment = reduceAssignment;
 	}
-	public Map<Integer, Long> getJobMaxMapTime() {
-		return jobMaxMapTime;
-	}
-	public void setJobMaxMapTime(Map<Integer, Long> jobMaxMapTime) {
-		this.jobMaxMapTime = jobMaxMapTime;
-	}
+
 	public Map<Integer, Integer> getMapTask2Slot() {
 		return mapTask2Slot;
 	}
@@ -218,10 +172,10 @@ public class Schedule {
 	public void setCluster(Cluster cluster) {
 		this.cluster = cluster;
 	}
-	public long getFirstAvail() {
+	public double getFirstAvail() {
 		return firstAvail;
 	}
-	public void setFirstAvail(long firstAvail) {
+	public void setFirstAvail(double firstAvail) {
 		this.firstAvail = firstAvail;
 	}
 	public DataNode getFirstSlot() {
@@ -257,7 +211,7 @@ public class Schedule {
 	}
 	
 	//为当前任务找到一个最小准备时间的节点执行
-	public long assignTaskNode(Task task,long currentTime){
+	public long assignTaskNode(Task task,double currentTime){
 		TaskType taskType = task.getType();
 		byte[][] topo = this.cluster.getTopo();
 		if(taskType == TaskType.MAP){
@@ -267,15 +221,15 @@ public class Schedule {
 					if(topo[nodeId][nd.getNodeID()] == 1){
 						for (Slot sl : nd.getMapSlots()) {
 							if(sl.getCurFinishTime() <= currentTime){
-								long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
-								long finishTime = currentTime + tepSetupTime + task.getProcessTime();
+								double tepSetupTime = (double)task.getInputSize() / Cluster.REMOTE_RATE;
+								double finishTime = currentTime + tepSetupTime + task.getProcessTime();
 								task.setStartTime(currentTime);
 								task.setFinishTime(finishTime);
 								task.setOutputSize(task.getInputSize() * task.getJob().getIo_rate());
 								task.setReduceDataNode(nodeId);
 								sl.setCurFinishTime(sl.getCurFinishTime() + tepSetupTime + task.getProcessTime());
 								task.setProcessed(true);
-								return tepSetupTime + task.getProcessTime();
+								return (long)(tepSetupTime + task.getProcessTime());
 							}
 						}
 					}					
@@ -288,14 +242,14 @@ public class Schedule {
 					for (Slot sl : nd.getMapSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
 							task.setStartTime(currentTime);
-							long tepSetupTime = (long)task.getInputSize() / Cluster.RACK_RATE;
-							long finishTime = currentTime + tepSetupTime + task.getProcessTime();
+							double tepSetupTime = task.getInputSize() / Cluster.RACK_RATE;
+							double finishTime = currentTime + tepSetupTime + task.getProcessTime();
 							task.setFinishTime(finishTime);
 							task.setOutputSize(task.getInputSize() * this.getIoRate());
 							task.setReduceDataNode(nodeId);
 							sl.setCurFinishTime(sl.getCurFinishTime() + tepSetupTime + task.getProcessTime());
 							task.setProcessed(true);
-							return tepSetupTime + task.getProcessTime();
+							return (long)(tepSetupTime + task.getProcessTime());
 						}
 					}
 				}					
@@ -308,8 +262,8 @@ public class Schedule {
 					for (Slot sl : nd.getMapSlots()) {
 						if(sl.getCurFinishTime() <= currentTime){
 							task.setStartTime(currentTime);
-							long tepSetupTime = (long)task.getInputSize() / Cluster.REMOTE_RATE;
-							long finishTime = currentTime + tepSetupTime + task.getProcessTime();
+							double tepSetupTime = task.getInputSize() / Cluster.REMOTE_RATE;
+							double finishTime = currentTime + tepSetupTime + task.getProcessTime();
 							//任务结束时间
 							task.setFinishTime(finishTime);
 							//当前MAP任务输出数据大小
@@ -320,7 +274,7 @@ public class Schedule {
 							sl.setCurFinishTime(sl.getCurFinishTime() + tepSetupTime + task.getProcessTime());
 							//任务设置为已处理
 							task.setProcessed(true);
-							return tepSetupTime + task.getProcessTime();
+							return (long)(tepSetupTime + task.getProcessTime());
 						}
 					}
 				}					
@@ -331,22 +285,22 @@ public class Schedule {
 					for(Slot sl : dn.getReduceSlots()){
 						if(sl.getCurFinishTime() <= currentTime){
 							int dataNode = dn.getNodeID();
-							long transferTime = 0;
+							double transferTime = 0;
 							for(Task eachMapTask : task.getJob().getMaps()){
 								if(topo[dataNode][eachMapTask.getReduceDataNode()] == 1){
-									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
+									transferTime += (eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.LOCAL_RATE));
 								}else if(topo[dataNode][eachMapTask.getReduceDataNode()] == 2){
-									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
+									transferTime += (eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.RACK_RATE));
 								}else{
-									transferTime += (long)(eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
+									transferTime += (eachMapTask.getOutputSize() / (task.getJob().getReduces().size() * Cluster.REMOTE_RATE));
 								}	
 							}
 							task.setStartTime(currentTime);
-							long finishTime = currentTime + transferTime + task.getProcessTime();
+							double finishTime = currentTime + transferTime + task.getProcessTime();
 							task.setFinishTime(finishTime);
 							sl.setCurFinishTime(finishTime);
 							task.setProcessed(true);
-							return transferTime + task.getProcessTime();
+							return (long)(transferTime + task.getProcessTime());
 						}
 					}
 		}

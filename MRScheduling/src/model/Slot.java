@@ -18,21 +18,21 @@ public class Slot implements Serializable{
 		this.nodeID = nodeID;
 	}
 
-	private long startTime = 0;
-	private long curFinishTime = 0;
-	public long getStartTime() {
+	private double startTime = 0;
+	private double curFinishTime = 0;
+	public double getStartTime() {
 		return startTime;
 	}
 
-	public void setStartTime(long startTime) {
+	public void setStartTime(double startTime) {
 		this.startTime = startTime;
 	}
 
-	public long getCurFinishTime() {
+	public double getCurFinishTime() {
 		return curFinishTime;
 	}
 
-	public void setCurFinishTime(long curFinishTime) {
+	public void setCurFinishTime(double curFinishTime) {
 		this.curFinishTime = curFinishTime;
 	}
 

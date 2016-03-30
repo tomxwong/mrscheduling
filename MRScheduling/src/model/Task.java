@@ -14,10 +14,10 @@ public class Task implements Serializable{
 	private int taskID;
 	private int jobID;
 	
-	private long processTime;
-	private long setupTime;
-	private long finishTime;
-	private long startTime;
+	private double processTime;
+	private double setupTime;
+	private double finishTime;
+	private double startTime;
 	
 	private double inputSize;
 	public boolean isProcessed() {
@@ -47,7 +47,7 @@ public class Task implements Serializable{
 	
 	private TaskType type;
 	
-	public Task(int tid, long pTime, TaskType type, Job job)
+	public Task(int tid, double pTime, TaskType type, Job job)
 	{
 		this.taskID = tid;
 		//this.jobID = jid;
@@ -68,16 +68,16 @@ public class Task implements Serializable{
 	public void setJobID(int jobID) {
 		this.jobID = jobID;
 	}
-	public long getProcessTime() {
+	public double getProcessTime() {
 		return processTime;
 	}
-	public void setProcessTime(long processTime) {
+	public void setProcessTime(double processTime) {
 		this.processTime = processTime;
 	}
-	public long getSetupTime() {
+	public double getSetupTime() {
 		return setupTime;
 	}
-	public void setSetupTime(long setupTime) {
+	public void setSetupTime(double setupTime) {
 		this.setupTime = setupTime;
 	}
 	public double getInputSize() {
@@ -110,10 +110,10 @@ public class Task implements Serializable{
 	public void setJob(Job job) {
 		this.job = job;
 	}
-	public long getFinishTime() {
+	public double getFinishTime() {
 		return finishTime;
 	}
-	public void setFinishTime(long finishTime) {
+	public void setFinishTime(double finishTime) {
 		this.finishTime = finishTime;
 	}
 	public void setHostList(ArrayList<Integer> hostList) {
@@ -128,10 +128,10 @@ public class Task implements Serializable{
 	public double getSortKey() {
 		return sortKey;
 	}
-	public void setStartTime(long startTime) {
+	public void setStartTime(double startTime) {
 		this.startTime = startTime;
 	}
-	public long getStartTime() {
+	public double getStartTime() {
 		return startTime;
 	}
 	/*public ArrayList<Integer> getHostList() {
