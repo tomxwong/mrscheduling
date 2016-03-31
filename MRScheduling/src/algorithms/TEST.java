@@ -1,10 +1,14 @@
 package algorithms;
 
+import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+
+import org.apache.commons.beanutils.BeanUtils;
 
 
 public class TEST{
@@ -56,7 +60,7 @@ public class TEST{
 		}
 		return arr;
 	}
-	public static void main(String[] args){
+	public static void main(String[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException{
 		TEST test = new TEST();
 //		A a1 = test.new A();
 //		A a2 = test.new A(a1);
@@ -67,11 +71,11 @@ public class TEST{
 		ll.add(3);
 //		System.out.println(ll.subList(0, 2));
 //		List<List<Integer>> ls = new ArrayList<List<Integer>>();
-		List<Integer> ls1 = new ArrayList<Integer>();
-		ls1.add(ll.get(0));
-		ll.remove(0);
-//		System.out.println(ll.get(0));
-//		System.out.println(ls1.get(0));
+		List<Integer> ls1 = (ArrayList<Integer>) BeanUtils.cloneBean(ll);
+		ll.set(0, 12);
+		
+		System.out.println(ll.get(0));
+		System.out.println(ls1.size());
 //		ls1.add(2);
 //		ls1.add(3);
 //		List<Integer> ls2 = new ArrayList<Integer>();
@@ -89,6 +93,8 @@ public class TEST{
 //      System.out.println(r.nextInt()%10);
 //		int [] aa = test.getN(10);
 //		System.out.println(aa.toString());
-		System.out.println(ll);
+//		SimpleDateFormat time=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//		String TimeString = time.format(new java.util.Date());
+//		System.out.println(TimeString);
 	}
 };

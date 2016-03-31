@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,6 +18,12 @@ import java.util.Random;
 
 
 
+
+
+
+
+
+import org.apache.commons.beanutils.BeanUtils;
 
 import data.Parameters;
 import data.RandomInstanceFile;
@@ -183,7 +190,34 @@ public class MainChunk{
         	///////////////////////////////////
         }
     }
+	public double calculateMapTCJob(Job job){
+		double cost = 0;
+			for (Task task : job.getMaps()) {
+				cost += task.getProcessTime();
+		}
+		return cost;
+	}
+	public double calculateReduceTC(Job job){
+		double cost = 0;
+			for (Task task : job.getReduces()) {
+				cost += task.getProcessTime();
+		}
+		return cost;
+	}
 	
+	public void calculateOnce(List<Job> joblist){
+		for (Job job : joblist) {
+			job.setMapTC(calculateMapTCJob(job));
+			job.setReduceTC(calculateReduceTC(job));
+		}
+		long mFinishTime = 0;
+		long rFinishTime = 0;
+		for (Job job : joblist) {
+			job.setMapFinishTime(mFinishTime + job.getMapTC());
+			job.setReduceFinishTime(Math.max(rFinishTime,job.getMapFinishTime()) + job.getReduceTC());
+			job.setFinishTime(job.getReduceFinishTime());
+		}
+	}
 	//直接把joblist按顺序调度执行,返回惩罚代价
 	public double runlist(Schedule schedule,List<Job> joblist){
 		// TODO Auto-generated method stub
@@ -301,8 +335,7 @@ public class MainChunk{
 			List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
         	for (List<Job> list : tepLists) {
         		Tools.clearJobInfo(list);
-				Tools.clearResources(schedule);
-				runlist(schedule, list);
+				calculateOnce(list);
 				/////////////////////////////////
 				//printAlist(list);
 				//System.out.print(":");
@@ -354,8 +387,7 @@ public class MainChunk{
 				List<List<Job>> listsForCheckBk = new ArrayList<List<Job>>();
 				for (List<Job> list2 : listsForCheck) {
 					Tools.clearJobInfo(list2);
-					Tools.clearResources(schedule);
-					runlist(schedule, list2);
+					calculateOnce(list2);
 					//////////////////////
 					//printAlist(list2);
 					//System.out.print(":");
@@ -392,7 +424,6 @@ public class MainChunk{
 		List<Job> jlist = GetJobSequence(schedule,joblist);
 		System.out.print("初始作业序列: ");
 		printAlist(jlist);
-		Tools.clearResources(schedule);
 		Tools.clearJobInfo(jlist);
 		//初始化部分
 		//用于初始化温度
@@ -443,10 +474,9 @@ public class MainChunk{
 			//////////////////////
 			//局部搜索部分 获得PI''
 	        Tools.clearJobInfo(last_solution);
-	        Tools.clearResources(schedule);
 	        
 			List<Job> after_localsearch = iterative_improvement(schedule, deepCopy(last_solution));
-			runlist(schedule, after_localsearch);
+			calculateOnce(after_localsearch);
 			//////////////////////
 			printAlist(after_localsearch);
 			System.out.println(getTotalPenaltyCost(after_localsearch));
@@ -457,8 +487,8 @@ public class MainChunk{
 			bufferWritter.write("\n");
 			//////////////////////
 			double penalty1 = getTotalPenaltyCost(after_localsearch);
-			Tools.clearResources(schedule);
-			runlist(schedule, jlist);
+	
+			calculateOnce(jlist);
 			//////////////////////
 			printAlist(after_localsearch);
 			System.out.println(getTotalPenaltyCost(after_localsearch));
@@ -478,7 +508,6 @@ public class MainChunk{
       			}else if(Math.random() < Math.pow(Math.E, -(penalty1 - penalty2)/Temperature)){
       				Tools.clearJobInfo(after_localsearch);
       				Tools.clearJobInfo(jlist);
-      				Tools.clearResources(schedule);
       				last_solution = after_localsearch;
 			}
 			//降低温度
@@ -488,7 +517,11 @@ public class MainChunk{
 		double penalty = getTotalPenaltyCost(listb);
 		System.out.println("final list:");
 		printAlist(listb);
+		////////////////////////////////////////////////
 		System.out.println(" penalty:" + penalty);
+		SimpleDateFormat time=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String TimeString = time.format(new java.util.Date());
+		System.out.println("结束时间："+TimeString);
 		//////////////////////////////////////
 		//bufferWritter.write("tc_fix_h_d_" + listb.size());
 		//////////////////////////////////////
@@ -508,11 +541,10 @@ public class MainChunk{
 			for (List<Job> joblist : lists) {
 				//把当前作业序列执行一遍
 				Tools.clearJobInfo(joblist);
-	        	Tools.clearResources(schedule);
-				runlist(schedule,joblist);
+				calculateOnce(joblist);
 				//////////////////////
-				printAlist(joblist);
-				System.out.println(getTotalPenaltyCost(joblist));
+//				printAlist(joblist);
+//				System.out.println(getTotalPenaltyCost(joblist));
 				//////////////////////
 				for (Job job : joblist) {
 					//拖期完成的情况
@@ -589,8 +621,8 @@ public class MainChunk{
 			Schedule step = new Schedule(schedule);
 			runlist(step,joblist);
 			//////////////////////
-			printAlist(joblist);
-			System.out.println(getTotalPenaltyCost(joblist));
+//			printAlist(joblist);
+//			System.out.println(getTotalPenaltyCost(joblist));
 			//////////////////////
 			for (Job job : joblist) {
 				if(job.getFinishTime() > job.getDeadline()){
@@ -636,11 +668,10 @@ public class MainChunk{
 			//把列表中的每一个序列执行一遍
 			for (List<Job> list2 : listsForCheck) {
 				Tools.clearJobInfo(list2);
-				Tools.clearResources(schedule);
-				runlist(schedule, list2);
+				calculateOnce(list2);
 				//////////////////////
-				printAlist(list2);
-				System.out.println(getTotalPenaltyCost(list2));
+//				printAlist(list2);
+//				System.out.println(getTotalPenaltyCost(list2));
 				//////////////////////
 				List<Job> tList = deepCopy(list2);
 				listsForCheckBk.add(tList);
@@ -649,11 +680,11 @@ public class MainChunk{
 			//按照总惩罚代价从小到大排序
 			Collections.sort(listsForCheckBk, new ListComparator());
 			//打印总惩罚代价
-			for (List<Job> list2 : listsForCheckBk) {
-				printAlist(list2);
-				System.out.print(":");
-				System.out.println(getTotalPenaltyCost(list2));
-			}
+//			for (List<Job> list2 : listsForCheckBk) {
+//				printAlist(list2);
+//				System.out.print(":");
+//				System.out.println(getTotalPenaltyCost(list2));
+//			}
 			SES = listsForCheckBk.get(0);
 		}
 		return SES;
@@ -695,15 +726,9 @@ public class MainChunk{
 		// TODO Auto-generated method stub
 		
 	}
+	@SuppressWarnings("unchecked")
 	public List<Job> deepCopy(List<Job> src) throws Exception {             
-	    ByteArrayOutputStream byteOut = new ByteArrayOutputStream();             
-	    ObjectOutputStream out = new ObjectOutputStream(byteOut);             
-	    out.writeObject(src);                    
-	    ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());             
-	    ObjectInputStream in =new ObjectInputStream(byteIn);             
-	    @SuppressWarnings("unchecked")
-		List<Job> dest = (List<Job>)in.readObject();             
-	    return dest;         
+	    return (ArrayList<Job>)BeanUtils.cloneBean(src);         
 	}   
 	
 	public static void main(String[] args)throws Exception{
@@ -717,7 +742,7 @@ public class MainChunk{
 		
 		
 		p.setP_rack(2);
-		p.setP_node(4);
+		p.setP_node(100);
 		p.setP_map_slot(4);
 		p.setP_reduce_slot(2);
 		
@@ -737,7 +762,7 @@ public class MainChunk{
 		p.setP_job_deadline_sigma(100);
 		
 		
-		String fileName ="..\\..\\TestData\\";
+		String fileName ="..\\..\\TestData\\MR_I_BI_NEW_100_1.txt";
 		RandomInstanceFile rf = new RandomInstanceFile(p, fileName);
 		try {
 			Schedule s = rf.newInstance();
@@ -754,6 +779,9 @@ public class MainChunk{
 //	        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
 //			mc.permute(s.getJobs(), 0,s,bufferWritter);
 //			bufferWritter.close();
+			SimpleDateFormat time=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String TimeString = time.format(new java.util.Date());
+			System.out.println("开始时间："+TimeString);
 			mc.start(s);
 		} catch (IOException e) {
 			e.printStackTrace();

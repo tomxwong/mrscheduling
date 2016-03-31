@@ -41,6 +41,9 @@ public class Tools {
 			job.setPenaltyCost(0);
 			//清除排序关键字
 			job.setSortKey(0);
+			//清除MAP和REDUCE代价
+			job.setMapTC(0);
+			job.setReduceTC(0);
 			//清理任务信息
 			for (Task task : job.getMaps()) {
 				task.setFinishTime(0);
