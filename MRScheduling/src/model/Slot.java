@@ -2,11 +2,8 @@ package model;
 
 import java.io.Serializable;
 
-public class Slot implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1647427867940227748L;
+public class Slot{
+
 	private int slotID;
 	private int nodeID;
 	SlotType type;

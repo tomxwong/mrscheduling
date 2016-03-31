@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Task implements Serializable{
+public class Task{
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4748796559605114164L;
+
 	private int taskID;
 	private int jobID;
 	

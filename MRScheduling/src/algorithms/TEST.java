@@ -11,7 +11,13 @@ import java.util.Random;
 import org.apache.commons.beanutils.BeanUtils;
 
 
-public class TEST{
+public class TEST implements Cloneable{
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return (TEST)super.clone();
+	}
+	private int ss;
 	TEST(){}
 	private class A{
 		B bm;
@@ -60,22 +66,22 @@ public class TEST{
 		}
 		return arr;
 	}
-	public static void main(String[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException{
+	public static void main(String[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, CloneNotSupportedException{
 		TEST test = new TEST();
 //		A a1 = test.new A();
 //		A a2 = test.new A(a1);
 //		System.out.println(a1.bm == a2.bm);
-		List<Integer> ll = new ArrayList<Integer>();
-		ll.add(1);
-		ll.add(2);
-		ll.add(3);
+//		List<Integer> ll = new ArrayList<Integer>();
+//		ll.add(1);
+//		ll.add(2);
+//		ll.add(3);
 //		System.out.println(ll.subList(0, 2));
 //		List<List<Integer>> ls = new ArrayList<List<Integer>>();
-		List<Integer> ls1 = (ArrayList<Integer>) BeanUtils.cloneBean(ll);
-		ll.set(0, 12);
-		
-		System.out.println(ll.get(0));
-		System.out.println(ls1.size());
+//		List<Integer> ls1 = (ArrayList<Integer>) BeanUtils.cloneBean(ll);
+//		ll.set(0, 12);
+//		
+//		System.out.println(ll.get(0));
+//		System.out.println(ls1.size());
 //		ls1.add(2);
 //		ls1.add(3);
 //		List<Integer> ls2 = new ArrayList<Integer>();
@@ -96,5 +102,12 @@ public class TEST{
 //		SimpleDateFormat time=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //		String TimeString = time.format(new java.util.Date());
 //		System.out.println(TimeString);
+		List<TEST> laList = new ArrayList<TEST>();
+		laList.add(new TEST());
+		List<TEST> lbList = new ArrayList<TEST>();
+		lbList.add((TEST) laList.get(0).clone());
+		laList.get(0).ss = 1;
+		lbList.get(0).ss = 2;
+		System.out.println(laList.get(0).ss == lbList.get(0).ss);
 	}
 };

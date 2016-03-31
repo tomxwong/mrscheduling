@@ -1,16 +1,20 @@
 package model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Job implements Serializable{
+public class Job implements Cloneable{
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return (Job)super.clone();
+	}
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5865848706027532115L;
 	private int jobID;
 	private int mapNum;
 	private int reduceNum;

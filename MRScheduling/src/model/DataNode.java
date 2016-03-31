@@ -5,12 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Slot;
 //slot
-public class DataNode implements Serializable{
+public class DataNode{
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5333413585806372947L;
 	private int nodeID;
 	private List<Slot> mapSlots = new ArrayList<Slot>();
 	private List<Slot> reduceSlots = new ArrayList<Slot>();

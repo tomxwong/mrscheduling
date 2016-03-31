@@ -326,7 +326,9 @@ public class MainChunk{
         	removeJobs.remove(i);
         	for(int j = 0; j <= joblist.size(); j++){
         		List<Job> tepList = new ArrayList<Job>();
-        		tepList = deepCopy(joblist);
+        		for (Job job2 : joblist) {
+					tepList.add((Job)job2.clone());
+				}
         		//在j位置加入当前待处理作业
         		tepList.add(j,job);
         		//插入完成的list加入到list集合中
@@ -341,7 +343,10 @@ public class MainChunk{
 				//System.out.print(":");
 				//System.out.println(getTotalPenaltyCost(list));
 				/////////////////////////////////
-				List<Job> tList = deepCopy(list);
+				List<Job> tList = new ArrayList<Job>();
+				for (Job job2 : list) {
+					tList.add((Job)job2.clone());
+				}
 				listsForCheckBk.add(tList);
 			}
         	//按照总惩罚代价从小到大排序
@@ -373,7 +378,10 @@ public class MainChunk{
 	        int[] ra = getN(length);
 			for(int i = 0; i < length; i++){
 				//joblist为是上一个最优作业序列
-				List<Job> list1 = deepCopy(joblist);
+				List<Job> list1 = new ArrayList<Job>();
+				for (Job job : joblist) {
+					list1.add((Job)job.clone());
+				}
 				int pos = ra[i];
 				Job job = list1.get(pos);
 				list1.remove(pos);
@@ -393,7 +401,10 @@ public class MainChunk{
 					//System.out.print(":");
 					//System.out.println(getTotalPenaltyCost(list2));
 					//////////////////////
-					List<Job> tList = deepCopy(list2);
+					List<Job> tList = new ArrayList<Job>();
+					for (Job job2 : list2) {
+						tList.add((Job)job2.clone());
+					}
 					listsForCheckBk.add(tList);
 				}
 				Collections.sort(listsForCheckBk, new ListComparator());
@@ -454,7 +465,10 @@ public class MainChunk{
 		//PI'								PI
 		Tools.clearJobInfo(jlist);
 		Tools.clearResources(schedule);
-		List<Job> last_solution = deepCopy(jlist);
+		List<Job> last_solution = new ArrayList<Job>();
+		for (Job job : jlist) {
+			last_solution.add((Job)job.clone());
+		}
 		while(iterated_generations <= max_generations){
 			////////////////////////////////
 			System.out.print("迭代次数：");
@@ -475,7 +489,11 @@ public class MainChunk{
 			//局部搜索部分 获得PI''
 	        Tools.clearJobInfo(last_solution);
 	        
-			List<Job> after_localsearch = iterative_improvement(schedule, deepCopy(last_solution));
+	        List<Job> tepLast_Solution = new ArrayList<Job>();
+	        for (Job job : last_solution) {
+				tepLast_Solution.add((Job)job.clone());
+			}
+			List<Job> after_localsearch = iterative_improvement(schedule, tepLast_Solution);
 			calculateOnce(after_localsearch);
 			//////////////////////
 			printAlist(after_localsearch);
@@ -673,7 +691,10 @@ public class MainChunk{
 //				printAlist(list2);
 //				System.out.println(getTotalPenaltyCost(list2));
 				//////////////////////
-				List<Job> tList = deepCopy(list2);
+				List<Job> tList = new ArrayList<Job>();
+				for (Job job2 : list2) {
+					tList.add((Job)job2.clone());
+				}
 				listsForCheckBk.add(tList);
 			}
 			
